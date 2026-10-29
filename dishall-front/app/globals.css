@@ -49,6 +49,13 @@
   padding-block: 0.15em;
 }
 
+@utility glow-title {
+  filter:
+    drop-shadow(0 0 4px rgb(255 255 255 / 0.8))
+    drop-shadow(0 0 20px var(--color-pink))
+    drop-shadow(0 0 50px var(--color-pink));
+}
+
 body {
   background: var(--color-background);
   color: var(--color-foreground);
