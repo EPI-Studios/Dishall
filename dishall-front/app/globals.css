@@ -8,6 +8,7 @@
   --color-pink: #ff2db6;
   --color-orange: #ff9e1f;
   --color-purple: #2a1458;
+  --color-gold: #efbf04;
 }
 
 :root {
@@ -22,13 +23,14 @@
     var(--color-pink-light) 90%
   );
   --gradient-title: linear-gradient(to right, #f3e9ff 10%, #ffcced 100%);
+  --gradient-bump-btn: linear-gradient(to right, #9f116e 0%, #e30094);
 }
 
 @theme inline {
   --color-background: var(--gradient-background);
   --color-foreground: var(--color-white);
   --font-body: var(--font-chakra);
-  --font-title: var(--font-bangers);
+  --font-title: var(--font-boldonse);
 }
 
 @utility text-gradient-title {
@@ -36,6 +38,7 @@
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  padding-block: 0.15em;
 }
 
 @utility text-gradient-subtitle {
@@ -43,6 +46,7 @@
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  padding-block: 0.15em;
 }
 
 body {

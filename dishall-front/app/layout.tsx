@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Chakra_Petch, Bangers } from "next/font/google";
+import { Chakra_Petch, Boldonse } from "next/font/google";
 import "./globals.css";
 
 const chakra = Chakra_Petch({
@@ -9,8 +9,8 @@ const chakra = Chakra_Petch({
   display: "swap",
 });
 
-const bangers = Bangers({
-  variable: "--font-bangers",
+const boldonse = Boldonse({
+  variable: "--font-boldonse",
   subsets: ["latin"],
   weight: "400",
   display: "swap"
@@ -25,7 +25,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="fr"
-      className={`${chakra.variable} ${bangers.variable} h-full antialiased`}
+      className={`${chakra.variable} ${boldonse.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
