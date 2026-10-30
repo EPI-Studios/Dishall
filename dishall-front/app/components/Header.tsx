@@ -1,10 +1,15 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { Icon } from "@iconify/react";
+import { useState } from "react";
 
 export default function Header() {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
-    <header className="m-6 flex items-center justify-between lg:absolute lg:inset-x-0 lg:top-0 lg:z-20 lg:m-0 lg:px-10 lg:py-6">
+    <header className="relative z-30 m-6 flex items-center justify-between lg:absolute lg:inset-x-0 lg:top-0 lg:m-0 lg:px-10 lg:py-6">
       <div className="flex items-center">
         <Link href="/">
           <Image
@@ -13,6 +18,7 @@ export default function Header() {
             height={65}
             alt="logo Dishall"
             loading="eager"
+            className="h-auto w-[60px] shrink-0"
           />
         </Link>
 
@@ -20,6 +26,7 @@ export default function Header() {
           DISHALL
         </h1>
 
+        {/* Navigation Desktop */}
         <nav className="ml-8 hidden gap-8 text-sm lg:flex">
           <Link className="hover:font-bold" href="/serveurs">
             Serveurs
@@ -30,14 +37,43 @@ export default function Header() {
         </nav>
       </div>
 
-      <Icon
-        icon="radix-icons:hamburger-menu"
-        width="50"
-        height="50"
-        color="var(--color-white)"
-        className="lg:hidden"
-        aria-label="Menu"
-      />
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        aria-label={isOpen ? "Fermer le menu" : "Ouvrir le menu"}
+        aria-expanded={isOpen}
+        className=" cursor-pointer lg:hidden"
+      >
+        <Icon
+          icon={isOpen ? "radix-icons:cross-1" : "radix-icons:hamburger-menu"}
+          width="50"
+          height="50"
+          color="var(--color-white)"
+          className="lg:hidden"
+          aria-label="Menu"
+        />
+      </button>
+
+      {/* Menu déroulant (Mobile uniquement) */}
+      {isOpen && (
+  <nav
+    id="mobile-menu"
+    className="absolute inset-x-0 top-full z-40 mt-6 flex flex-col items-center gap-5 rounded-xl border-2 border-pink bg-dark/95 p-6 text-lg shadow-[0_0_15px_var(--color-pink)] backdrop-blur-sm lg:hidden"
+  >
+    <Link href="/" onClick={() => setIsOpen(false)}>
+      Serveurs
+    </Link>
+    <Link href="/categories" onClick={() => setIsOpen(false)}>
+      Catégories
+    </Link>
+    <Link
+      href="/connexion"
+      onClick={() => setIsOpen(false)}
+    >
+      Se connecter
+    </Link>
+  </nav>
+)}
 
       <div className="hidden items-center gap-4 text-sm lg:flex">
         <a className="hover:font-bold" href="#">

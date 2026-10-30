@@ -13,8 +13,9 @@ export default function Hero() {
         <Header />
 
         <section className="relative mx-6 mb-8 h-[284px] w-auto overflow-hidden rounded-xl lg:mx-0 lg:mb-12 lg:h-[600px] lg:rounded-none">
-          <div className="absolute inset-0 z-0 bg-[url(/hero-background.jpg)] bg-cover bg-center opacity-70 lg: opacity-100 lg:bg-top"></div>
+          <div className="absolute inset-0 z-0 bg-[url(/hero-background.jpg)] bg-cover bg-center opacity-70 lg:opacity-100 lg:bg-top"></div>
 
+          {/* Dégradé pour assombrir le fond*/}
           <div
             aria-hidden="true"
             className="absolute inset-0 z-0 bg-linear-to-t from-dark via-dark/20 to-transparent"
@@ -38,7 +39,7 @@ export default function Hero() {
               </p>
             </div>
 
-            <div className="mt-10 flex justify-evenly lg:mr-20 lg: mb-5 lg:gap-20">
+            <div className="mt-10 flex justify-evenly lg:mr-20 lg:mb-5 lg:gap-20">
               <button className="lg:h-[70px] lg:w-[200px] h-[45px] w-[135px] lg:text-xl rounded-xl bg-orange text-sm leading-tight tracking-[0.05em] text-[var(--color-dark)] hover:font-bold">
                 Explorer les <br />
                 serveurs
@@ -73,24 +74,25 @@ export default function Hero() {
 
           <div className="relative z-10 flex h-full items-center justify-center p-4 lg:items-end lg:pb-32">
             <form className="flex w-full items-center justify-center">
-              <div className="flex w-full max-w-2xl items-center gap-4 rounded-xl bg-pink px-8 py-2 text-dark shadow-[0_0_30px_var(--color-pink)]">
+              <div className="flex w-full max-w-2xl items-center gap-3 rounded-xl bg-pink px-4 py-2 text-dark shadow-[0_0_30px_var(--color-pink)] lg:gap-4 lg:px-8">
                 <Icon
                   icon="radix-icons:magnifying-glass"
                   width="28"
                   height="28"
                   aria-hidden="true"
+                  className="shrink-0"
                 />
                 <input
                   type="search"
                   name="server"
                   aria-label="Rechercher un serveur"
                   placeholder="Rechercher un serveur"
-                  className="flex-1 bg-transparent outline-none placeholder:text-dark"
+                  className="min-w-0 flex-1 bg-transparent outline-none placeholder:text-dark"
                 />
                 <button
                   type="submit"
                   aria-label="Lancer la recherche"
-                  className="cursor-pointer"
+                  className="shrink-0 cursor-pointer"
                 >
                   <Icon
                     icon="radix-icons:arrow-right"

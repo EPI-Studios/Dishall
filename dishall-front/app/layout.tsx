@@ -13,7 +13,7 @@ const boldonse = Boldonse({
   variable: "--font-boldonse",
   subsets: ["latin"],
   weight: "400",
-  display: "swap"
+  adjustFontFallback: false,
 })
 
 export const metadata: Metadata = {
