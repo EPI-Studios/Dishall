@@ -2,28 +2,7 @@ import ServerCard from "./components/ServerCard";
 import Footer from "./components/Footer";
 import Hero from "./components/Hero";
 import { Icon } from "@iconify/react";
-import { ServerType } from "@/app/@types/type";
-
-const servers: ServerType[] = [
-  {
-    id: 1,
-    name: "Server Name #1",
-    tag: "Tag",
-    rating: 4.2,
-    members: 1000,
-    description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris fringilla, velit eget ullamcorper malesuada...",
-  },
-  {
-    id: 2,
-    name: "Server Name #2",
-    tag: "Tag",
-    rating: 3.7,
-    members: 58,
-    description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris fringilla, velit eget ullamcorper malesuada...",
-  },
-];
+import { servers } from "./data/servers";
 
 let totalMembers = 0;
 for (const server of servers) {
@@ -42,7 +21,7 @@ export default function Home() {
           </h3>
 
           <div className="grid gap-4 lg:grid-cols-2">
-            {servers.map((server) => (
+            {servers.slice(-4).map((server) => (
               <ServerCard key={server.id} server={server} />
             ))}
           </div>

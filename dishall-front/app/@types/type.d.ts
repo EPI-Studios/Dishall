@@ -5,9 +5,14 @@ export type ServerType = {
   rating: number;
   members: number;
   description: string;
+  category: string;
+  guild_picture: string;
+  country: string;
+  inviteUrl: string;
 };
 
 export type CategoryType = {
+  id: number;
   name: string;
   icon: string;
   description: string;

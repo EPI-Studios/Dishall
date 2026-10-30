@@ -28,10 +28,10 @@ export default function Header() {
 
         {/* Navigation Desktop */}
         <nav className="ml-8 hidden gap-8 text-sm lg:flex">
-          <Link className="hover:font-bold" href="/serveurs">
+          <Link className="hover:font-bold lg:text-2xl" href="/serveurs">
             Serveurs
           </Link>
-          <Link className="hover:font-bold" href="/categories">
+          <Link className="hover:font-bold lg:text-2xl" href="/categories">
             Catégories
           </Link>
         </nav>
@@ -60,7 +60,7 @@ export default function Header() {
     id="mobile-menu"
     className="absolute inset-x-0 top-full z-40 mt-6 flex flex-col items-center gap-5 rounded-xl border-2 border-pink bg-dark/95 p-6 text-lg shadow-[0_0_15px_var(--color-pink)] backdrop-blur-sm lg:hidden"
   >
-    <Link href="/" onClick={() => setIsOpen(false)}>
+    <Link href="/serveurs" onClick={() => setIsOpen(false)}>
       Serveurs
     </Link>
     <Link href="/categories" onClick={() => setIsOpen(false)}>
@@ -76,18 +76,18 @@ export default function Header() {
 )}
 
       <div className="hidden items-center gap-4 text-sm lg:flex">
-        <a className="hover:font-bold" href="#">
+        <a className="hover:font-bold lg:text-2xl" href="/connexion">
           Connexion
         </a>
         <a
           href="#"
           aria-label="Logo Discord"
-          className="flex size-10 items-center justify-center rounded-full bg-[#5865F2]"
+          className="flex size-12 items-center justify-center rounded-full bg-[#5865F2]"
         >
           <Icon
             icon="radix-icons:discord-logo"
-            width="22"
-            height="22"
+            width="30"
+            height="30"
             color="var(--color-white)"
           />
         </a>
