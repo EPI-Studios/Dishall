@@ -1,4 +1,4 @@
-import type { ReviewType } from "@/app/@types/type";
+import type { ReviewType } from "@/@types/type";
 
 export const reviews: ReviewType[] = [
   { id: 1, serverId: 1, username: "Kaiser", avatar: "https://api.dicebear.com/9.x/shapes/png?seed=kaiser", date: "2026-10-12", rating: 4, comment: "Super ambiance, les tournois sont bien organisés et les modérateurs réactifs." },

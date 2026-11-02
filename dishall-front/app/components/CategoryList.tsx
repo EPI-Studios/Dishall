@@ -1,32 +1,30 @@
 "use client";
 
 import { useState } from "react";
-import { CategoryType } from "../@types/type";
+import { CategoryType } from "../../@types/type";
 import { Icon } from "@iconify/react";
 import CategoryCard from "./CategoryCard";
 
-export default function CategoryList({ categories }: { categories: CategoryType[] }) {
+// TODO laisser le useState et ce qui le concerne ici et mettre le reste dans catégorie
 
-    const [sortBy, setSortBy] = useState("popularity");
-      const [searchTerm, setSearchTerm] = useState("");
-    
-      // .filter crée un nouveau tableau, pas besoin de faire une copie avec [...categories]
-      const sorted = categories
-        .filter((category: CategoryType) => {
-          return category.name.toLowerCase().includes(searchTerm.toLowerCase());
-        })
-      
-        .sort((a, b) => {
-        if (sortBy === "name") return a.name.localeCompare(b.name, "fr"); // Ordre alphabétique
-        if (sortBy === "servers") return b.nb_server - a.nb_server; // Ordre par nombre de serveurs
-        return b.nb_user - a.nb_user // Ordre par popularité, nombre de membres 
-      });
+export default function CategoryList({ categories }: { categories: CategoryType[] }) {
+  const [sortBy, setSortBy] = useState("popularity");
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // .filter crée un nouveau tableau, pas besoin de faire une copie avec [...categories]
+  const sorted = categories
+    .filter((category: CategoryType) => {
+      return category.name.toLowerCase().includes(searchTerm.toLowerCase());
+    })
+
+    .sort((a, b) => {
+      if (sortBy === "name") return a.name.localeCompare(b.name, "fr"); // Ordre alphabétique
+      if (sortBy === "servers") return b.nb_server - a.nb_server; // Ordre par nombre de serveurs
+      return b.nb_user - a.nb_user; // Ordre par popularité, nombre de membres
+    });
 
   return (
     <>
-      <h3 className="lg:text-2xl font-title text-gradient-subtitle text-center text-lg tracking-[0.1em] uppercase mb-8">
-        Toutes les catégories
-      </h3>
 
       <section className="mx-auto mb-8 flex w-full flex-col items-center gap-3 lg:max-w-2xl lg:flex-row lg:items-stretch">
         <div className="flex w-full items-center gap-4 rounded-xl px-4 py-2 border-1 border-pink shadow-[0_0_10px_var(--color-pink)] lg:flex-1">

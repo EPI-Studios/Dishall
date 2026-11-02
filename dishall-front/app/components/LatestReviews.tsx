@@ -1,4 +1,4 @@
-import type { ReviewType } from "@/app/@types/type";
+import type { ReviewType } from "@/@types/type";
 import ReviewCard from "./ReviewCard";
 
 export default function LatestReviews({ reviews }: { reviews: ReviewType[] }) {

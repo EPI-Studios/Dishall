@@ -1,5 +1,5 @@
 import Image from "next/image";
-import type { ReviewType } from "@/app/@types/type";
+import type { ReviewType } from "@/@types/type";
 import StarRating from "./StarRating";
 
 export default function ReviewCard({ review }: { review: ReviewType }) {

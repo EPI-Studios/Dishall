@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Icon } from "@iconify/react";
-import type { ServerType } from "@/app/@types/type";
+import type { ServerType } from "@/@types/type";
 import StarRating from "./StarRating";
 
 export default function ServerCard({ server }: { server: ServerType }) {

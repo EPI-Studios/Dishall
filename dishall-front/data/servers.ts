@@ -1,4 +1,4 @@
-import type { ServerType } from "@/app/@types/type";
+import type { ServerType } from "@/@types/type";
 
 export const servers: ServerType[] = [
   { id: 1, name: "Pixel Arena", tag: "FPS", category: "Gaming", rating: 4.5, members: 1200, guild_picture: "https://api.dicebear.com/9.x/shapes/png?seed=pixel-arena", guild_banner: "https://picsum.photos/seed/pixel-arena/800/300", description: "Pixel Arena est le serveur de référence pour les amateurs de FPS francophones. Tu y trouveras des tournois organisés chaque semaine, des salons dédiés à chaque jeu et un système de recherche de coéquipiers pour ne plus jamais jouer seul. Les salons vocaux sont ouverts toute la journée, avec des canaux séparés pour les parties détente et pour les sessions plus compétitives. Une équipe de modérateurs veille à garder une ambiance respectueuse, et des soirées custom games rythment la vie de la communauté.", country: "fr", inviteUrl: "https://discord.gg/exemple" },

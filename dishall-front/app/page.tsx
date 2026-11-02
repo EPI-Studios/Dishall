@@ -2,7 +2,7 @@ import ServerCard from "./components/ServerCard";
 import Footer from "./components/Footer";
 import Hero from "./components/Hero";
 import { Icon } from "@iconify/react";
-import { servers } from "./data/servers";
+import { servers } from "../data/servers";
 
 let totalMembers = 0;
 for (const server of servers) {
@@ -21,7 +21,7 @@ export default function Home() {
           </h3>
 
           <div className="grid gap-4 lg:grid-cols-2">
-            {servers.slice(-4).map((server) => (
+            {servers.slice(1, 5).map((server) => (
               <ServerCard key={server.id} server={server} />
             ))}
           </div>

@@ -1,4 +1,4 @@
-import type { ReviewType } from "@/app/@types/type";
+import type { ReviewType } from "@/@types/type";
 import StarRating from "./StarRating";
 
 export default function ReviewSummary({ reviews }: { reviews: ReviewType[]}) {

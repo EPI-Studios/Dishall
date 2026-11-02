@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Icon } from "@iconify/react";
-import { CategoryType } from "../@types/type";
+import { CategoryType } from "../../@types/type";
 
 export default function CategoryCard({ category }: { category: CategoryType }) {
   return (
