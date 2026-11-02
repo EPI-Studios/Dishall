@@ -2,16 +2,19 @@
 
 import Header from "./Header";
 import { Icon } from "@iconify/react";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { servers } from "../data/servers";
 import Link from "next/link";
 
-export default function Hero() {
-  const pathname = usePathname();
+type HeroProps = {
+  variant?: "home" | "search";
+}
+
+export default function Hero({ variant = "search" }: HeroProps) {
+  
   const router = useRouter();
   const [query, setQuery] = useState("");
-
   const search = query.trim().toLowerCase();
   const results = search
     ? servers
@@ -19,7 +22,7 @@ export default function Hero() {
         .slice(0, 5) // Pour avoir 5 suggestions de serveurs maximimum
     : [];
 
-  if (pathname === "/") {
+  if (variant === "home") {
     return (
       <div className="relative">
         <Header />
@@ -52,11 +55,12 @@ export default function Hero() {
             </div>
 
             <div className="mt-10 flex justify-evenly lg:mr-20 lg:mb-5 lg:gap-20">
-              <Link href="/serveurs">
-                <button className="lg:h-[70px] lg:w-[200px] h-[45px] w-[135px] lg:text-xl rounded-xl bg-orange text-sm leading-tight tracking-[0.05em] text-[var(--color-dark)] hover:font-bold">
-                  Explorer les <br />
-                  serveurs
-                </button>
+              <Link
+                href="/serveurs"
+                className="flex h-[45px] w-[135px] items-center justify-center rounded-xl bg-orange text-center text-sm leading-tight tracking-[0.05em] text-[var(--color-dark)] hover:font-bold lg:h-[70px] lg:w-[200px] lg:text-xl"
+              >
+                Explorer les <br />
+                serveurs
               </Link>
               <button className="lg:h-[70px] lg:w-[200px] h-[45px] w-[135px] lg:text-xl rounded-xl border-2 border-pink bg-dark text-sm tracking-[0.05em] text-[var(--color-white)] shadow-[0_0_10px_var(--color-pink)] hover:font-bold">
                 Ajouter le mien

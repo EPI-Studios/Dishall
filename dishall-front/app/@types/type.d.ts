@@ -7,6 +7,7 @@ export type ServerType = {
   description: string;
   category: string;
   guild_picture: string;
+  guild_banner: string;
   country: string;
   inviteUrl: string;
 };
@@ -18,4 +19,14 @@ export type CategoryType = {
   description: string;
   nb_user: number;
   nb_server: number;
+};
+
+export type ReviewType = {
+  id: number;
+  serverId: number;
+  username: string;
+  avatar: string;
+  date: string;
+  rating: number;
+  comment: string;
 }

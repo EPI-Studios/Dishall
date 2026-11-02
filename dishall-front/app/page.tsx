@@ -12,7 +12,7 @@ for (const server of servers) {
 export default function Home() {
   return (
     <>
-      <Hero />
+      <Hero variant="home"/>
 
       <main className="lg:mx-auto lg:max-w-4xl">
         <section className="mx-6 mb-8 lg:mb-12">

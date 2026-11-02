@@ -28,10 +28,10 @@ export default function Header() {
 
         {/* Navigation Desktop */}
         <nav className="ml-8 hidden gap-8 text-sm lg:flex">
-          <Link className="hover:font-bold lg:text-2xl" href="/serveurs">
+          <Link className="hover:font-bold lg:text-xl" href="/serveurs">
             Serveurs
           </Link>
-          <Link className="hover:font-bold lg:text-2xl" href="/categories">
+          <Link className="hover:font-bold lg:text-xl" href="/categories">
             Catégories
           </Link>
         </nav>
@@ -76,7 +76,7 @@ export default function Header() {
 )}
 
       <div className="hidden items-center gap-4 text-sm lg:flex">
-        <a className="hover:font-bold lg:text-2xl" href="/connexion">
+        <a className="hover:font-bold lg:text-xl" href="/connexion">
           Connexion
         </a>
         <a

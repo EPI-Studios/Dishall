@@ -2,9 +2,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { Icon } from "@iconify/react";
 import type { ServerType } from "@/app/@types/type";
+import StarRating from "./StarRating";
 
 export default function ServerCard({ server }: { server: ServerType }) {
-  const roundedRating = Math.round(server.rating * 2) / 2;
 
   return (
     /* Changer server.id par uuid */
@@ -34,41 +34,8 @@ export default function ServerCard({ server }: { server: ServerType }) {
                 />
               </div>
 
-              <div
-                className="flex shrink-0 gap-0.5"
-                role="img"
-                aria-label={`Note : ${roundedRating} sur 5`}
-              >
-                {[...Array(5)].map((_, i) => {
-                  const fill = Math.min(Math.max(roundedRating - i, 0), 1);
-
-                  return (
-                    <span key={i} className="relative inline-block size-[13px]">
-                      <Icon
-                        icon="radix-icons:star-filled"
-                        width="13"
-                        height="13"
-                        color="var(--color-white)"
-                        className="block"
-                        aria-hidden="true"
-                      />
-                      <span
-                        className="absolute inset-0 overflow-hidden"
-                        style={{ width: `${fill * 100}%` }}
-                      >
-                        <Icon
-                          icon="radix-icons:star-filled"
-                          width="13"
-                          height="13"
-                          color="var(--color-gold)"
-                          className="block"
-                          aria-hidden="true"
-                        />
-                      </span>
-                    </span>
-                  );
-                })}
-              </div>
+              <StarRating rating={server.rating} />
+              
             </div>
 
             <div className="flex items-center justify-between">
