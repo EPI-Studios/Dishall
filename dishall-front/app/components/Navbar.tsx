@@ -42,21 +42,21 @@ export default function NavBar() {
           <Link
             href="/serveurs"
             onClick={() => setIsOpen(false)}
-            className="text-center rounded-xl w-[90%] py-[40px] bg-pink-500/25"
+            className="text-center rounded-xl w-[90%] py-[40px] bg-pink-500/15"
           >
             Serveurs
           </Link>
           <Link
             href="/categories"
             onClick={() => setIsOpen(false)}
-            className="text-center rounded-xl w-[90%] py-[40px] bg-pink-500/25"
+            className="text-center rounded-xl w-[90%] py-[40px] bg-pink-500/10"
           >
             Catégories
           </Link>
           <Link
             href="/add"
             onClick={() => setIsOpen(false)}
-            className="text-center rounded-xl w-[90%] py-[40px] bg-pink-500/25"
+            className="text-center rounded-xl w-[90%] py-[40px] bg-pink-500/5"
           >
             Ajouter votre serveur
           </Link>

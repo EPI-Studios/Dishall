@@ -1,7 +1,7 @@
 import Footer from "../components/Footer";
 import Hero from "../components/Hero";
+import ServerFilter from "../components/ServerFilter";
 import { servers } from "../../data/servers";
-import ServerList from "../components/ServerList";
 
 export default function Serveurs() {
   return (
@@ -14,7 +14,7 @@ export default function Serveurs() {
             Tous les serveurs
           </h3>
 
-        <ServerList servers={servers} />
+          <ServerFilter servers={servers} />
         </div>
       </main>
 

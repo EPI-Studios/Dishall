@@ -51,6 +51,7 @@ export default function Header() {
         </a>
       </div>
 
+      {/* Navbar pour téléphone */}
       <NavBar />
     </header>
   );

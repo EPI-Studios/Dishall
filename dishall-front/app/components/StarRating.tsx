@@ -1,12 +1,6 @@
 import { Icon } from "@iconify/react";
 
-export default function StarRating({
-  rating,
-  size = 13,
-}: {
-  rating: number;
-  size?: number;
-}) {
+export default function StarRating({ rating, size = 13 }: { rating: number, size?: number }) {
   const roundedRating = Math.round(rating * 2) / 2;
 
   return (

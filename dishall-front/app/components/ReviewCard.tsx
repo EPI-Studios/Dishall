@@ -1,6 +1,6 @@
 import Image from "next/image";
-import type { ReviewType } from "@/@types/type";
 import StarRating from "./StarRating";
+import type { ReviewType } from "@/@types/type";
 
 export default function ReviewCard({ review }: { review: ReviewType }) {
   // timeZone "UTC" : évite qu'une date ISO sans heure ne glisse d'un jour
