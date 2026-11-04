@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+@theme static {
+  --color-dark: #0d0221;
+  --color-bg-purple: #1e044d;
+  --color-white: #f1e5ff;
+  --color-pink-light: #ffbae7;
+  --color-pink: #ff2db6;
+  --color-orange: #ff9e1f;
+  --color-purple: #2a1458;
+  --color-gold: #efbf04;
+  --color-bg-nav: #510424;
+}
+
+:root {
+  --gradient-background: radial-gradient(
+    ellipse 50% 50% at 50% 50%,
+    var(--color-bg-purple) 33%,
+    var(--color-dark) 100%
+  );
+  --gradient-subtitle: linear-gradient(
+    to top,
+    var(--color-pink) 30%,
+    var(--color-pink-light) 90%
+  );
+  --gradient-title: linear-gradient(to right, #f3e9ff 10%, #ffcced 100%);
+  --gradient-bump-btn: linear-gradient(to right, #9f116e 0%, #e30094);
+}
+
+@theme inline {
+  --color-background: var(--gradient-background);
+  --color-foreground: var(--color-white);
+  --font-body: var(--font-chakra);
+  --font-title: var(--font-boldonse);
+}
+
+@utility text-gradient-title {
+  background: var(--gradient-title);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  padding-block: 0.15em;
+}
+
+@utility text-gradient-subtitle {
+  background: var(--gradient-subtitle);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  padding-block: 0.15em;
+}
+
+@utility glow-title {
+  filter:
+    drop-shadow(0 0 4px rgb(255 255 255 / 0.8))
+    drop-shadow(0 0 20px var(--color-pink))
+    drop-shadow(0 0 50px var(--color-pink));
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-chakra), sans-serif;
+}
+
