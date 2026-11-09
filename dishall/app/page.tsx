@@ -2,15 +2,9 @@ import ServerCard from "./components/ServerCard";
 import Footer from "./components/Footer";
 import Hero from "./components/Hero";
 import { Icon } from "@iconify/react";
-import { servers } from "../data/servers";
 import { ServerType } from "@/@types/type";
 import { Suspense } from "react";
 import { getServers } from "@/lib/servers";
-
-let totalMembers = 0;
-for (const server of servers) {
-  totalMembers += server.members;
-}
 
 async function ServersSection() {
   const servers = await getServers();
@@ -21,7 +15,16 @@ async function ServersSection() {
           </div>
 }
 
-export default function Home() {
+export default async function Home() {
+  const servers = await getServers();
+  const totalMembers = servers.reduce((total, server) => {
+    return total + server.members
+  }, 0);
+
+  const bumpedServers = servers.filter((server) => {
+    return server.bumped === true;
+  })
+
   return (
     <>
       <Hero variant="home"/>
@@ -78,7 +81,7 @@ export default function Home() {
                 aria-hidden="true"
               />
               <p className="flex flex-col items-center text-center leading-tight">
-                <span className="text-2xl font-bold">{servers.length}</span> Serveurs bumpés
+                <span className="text-2xl font-bold">{bumpedServers.length}</span> Serveurs bumpés
               </p>
             </div>
           </div>

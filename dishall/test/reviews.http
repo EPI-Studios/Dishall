@@ -1,0 +1,4 @@
+@baseUrl = http://localhost:3000/api/
+
+### GET /reviews
+GET {{baseUrl}}/reviews?serverUuid=b2000000-0000-4000-8000-000000000001

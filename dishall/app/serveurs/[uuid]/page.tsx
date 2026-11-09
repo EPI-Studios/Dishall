@@ -8,7 +8,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { Icon } from "@iconify/react";
 import { getServerByUuid, getServers } from "@/lib/servers";
-import { getReviewsByServerId } from "@/lib/reviews";
+import { getReviewsByServerUuid } from "@/lib/reviews";
 import { Suspense } from "react";
 
 type Props = { params: Promise<{ uuid: string }> };
@@ -57,36 +57,42 @@ export default async function ServerPage({ params }: Props) {
     </>
   );
 }
+
 async function ServerContent({ params }: Props) {
   const { uuid } = await params;
   const server = await getServerByUuid(uuid);
+  const reviews = await getReviewsByServerUuid(uuid);
 
   if (!server) notFound();
-  //const reviews = await getReviewsByServerId(server.id);
   return (
     <>
       {/* Bannière du serveur */}
-      <section className="mb-8 overflow-hidden rounded-xl border-2 border-pink bg-dark shadow-[0_0_10px_var(--color-pink)]">
-        <Image
-          src={server.banner}
-          width={800}
-          height={300}
-          alt=""
-          aria-hidden="true"
-          className="h-32 w-full object-cover lg:h-48"
-        />
-      </section>
+      {server.banner && (
+        <section className="mb-8 overflow-hidden rounded-xl border-2 border-pink bg-dark shadow-[0_0_10px_var(--color-pink)]">
+          <Image
+            src={server.banner}
+            width={800}
+            height={300}
+            alt=""
+            aria-hidden="true"
+            className="h-32 w-full object-cover lg:h-48"
+          />
+        </section>
+      )}
 
       {/* Informations du serveur */}
       <section className="mb-8 rounded-xl border-2 border-pink bg-dark p-4 shadow-[0_0_10px_var(--color-pink)]">
         <div className="grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-3 lg:grid-cols-[auto_1fr_auto_auto] lg:gap-x-6">
-          <Image
+          {server.icon && (
+            <Image
             src={server.icon}
             width={130}
             height={130}
             alt={`Logo du serveur ${server.name}`}
             className="size-20 shrink-0 rounded-xl object-cover shadow-[0_0_10px_var(--color-pink)] lg:size-32"
           />
+          )}
+          
 
           <div className="flex min-w-0 flex-col gap-3">
             <div className="flex min-w-0 items-center gap-3">
@@ -107,11 +113,15 @@ async function ServerContent({ params }: Props) {
               <span className="rounded-xl border border-orange px-4 py-1 text-sm text-orange">
                 {server.category}
               </span>
-              
-                {server.tags.map((tag) => (
-                  <span className="rounded-xl border border-orange px-3 py-0.5 text-xs text-orange" key={tag.tag.uuid}>{tag.tag.name}</span>
-                ))}
-              
+
+              {server.tags.map((tag) => (
+                <span
+                  className="rounded-xl border border-orange px-3 py-0.5 text-xs text-orange"
+                  key={tag}
+                >
+                  {tag}
+                </span>
+              ))}
             </div>
           </div>
 
@@ -153,9 +163,10 @@ async function ServerContent({ params }: Props) {
         <p className="leading-relaxed">{server.description}</p>
       </section>
 
-      {/* Avis 
+      {/* Avis */}
+
       <ReviewSummary reviews={reviews} />
-      <LatestReviews reviews={reviews} /> */}
+      <LatestReviews reviews={reviews} />
     </>
   );
 }

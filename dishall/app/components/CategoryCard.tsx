@@ -4,7 +4,7 @@ import { CategoryType } from "../../@types/type";
 
 export default function CategoryCard({ category }: { category: CategoryType }) {
   return (
-    <Link href={`/categories/${category.id}`} className="block">
+    <Link href={`/categories/${category.name}`} className="block">
       <article className="border-2 border-pink rounded-xl p-4 shadow-[0_0_10px_var(--color-pink)]">
         <div className="flex items-start gap-4">
           <Icon

@@ -1,13 +1,15 @@
 import Header from "./Header";
 import Link from "next/link";
 import ServerSearchBar from "./ServerSearchBar";
-import { servers } from "../../data/servers";
+import { getServers } from "@/lib/servers";
 
 type HeroProps = {
   variant?: "home" | "search";
 }
 
-export default function Hero({ variant = "search" }: HeroProps) {
+export default async function Hero({ variant = "search" }: HeroProps) {
+
+  const servers = await getServers();
 
   if (variant === "home") {
     return (

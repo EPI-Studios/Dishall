@@ -72,7 +72,7 @@ export default function ServerSearchBar({
               results.map((server) => (
                 <li key={server.id}>
                   <Link
-                    href={`/serveurs/${server.id}`}
+                    href={`/serveurs/${server.uuid}`}
                     onClick={() => setQuery("")}
                     className="flex items-center justify-between gap-3 px-4 py-3 transition hover:bg-pink/20"
                   >

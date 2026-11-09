@@ -34,11 +34,11 @@ export default function Header() {
       </div>
 
       <div className="hidden items-center gap-4 text-sm lg:flex">
-        <a className="hover:font-bold lg:text-xl" href="/connexion">
+        <a className="hover:font-bold lg:text-xl" href="/api/auth/discord/login">
           Connexion
         </a>
         <a
-          href="#"
+          href="http://discord.com"
           aria-label="Logo Discord"
           className="flex size-12 items-center justify-center rounded-full bg-[#5865F2]"
         >

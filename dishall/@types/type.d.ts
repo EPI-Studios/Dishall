@@ -2,8 +2,10 @@ export type ServerType = {
   id: number;
   uuid: string;
   name: string;
-  tags: ServerTagType[];
+  tags: string[];
+  serverStats: serverStatsType;
   rating: number;
+  reviewCount: number;
   members: number;
   description: string;
   category: string;
@@ -11,6 +13,7 @@ export type ServerType = {
   banner: string;
   country: string;
   link: string;
+  bumped: boolean;
 };
 
 export type CategoryType = {
@@ -24,12 +27,11 @@ export type CategoryType = {
 
 export type ReviewType = {
   id: number;
-  serverId: number;
-  username: string;
-  avatar: string;
-  date: string;
-  rating: number;
+  serverUuid: string;
+  rate: number;
   comment: string;
+  created_at: string;
+  user: UserType;
 };
 
 export type ServerTagType = {
@@ -38,10 +40,8 @@ export type ServerTagType = {
   tag: TagType;
 }
 
-export type TagType = {
+export type serverStatsType = {
   id: number;
-  uuid: string;
-  name: string;
-  slug: string;
-};
+  users_nb: number;
+}
 
