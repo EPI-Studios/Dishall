@@ -51,9 +51,12 @@ export default async function Hero({ variant = "search" }: HeroProps) {
                 Explorer les <br />
                 serveurs
               </Link>
-              <button className="lg:h-[70px] lg:w-[200px] h-[45px] w-[135px] lg:text-xl rounded-xl border-2 border-pink bg-dark text-sm tracking-[0.05em] text-[var(--color-white)] shadow-[0_0_10px_var(--color-pink)] hover:font-bold">
+              <Link 
+                className="lg:h-[70px] lg:w-[200px] h-[45px] w-[135px] lg:text-xl flex items-center justify-center rounded-xl border-2 border-pink bg-dark text-sm tracking-[0.05em] text-[var(--color-white)] shadow-[0_0_10px_var(--color-pink)] hover:font-bold"
+                href="/api/auth/discord/guild/login"
+              >
                 Ajouter le mien
-              </button>
+              </Link>
             </div>
           </div>
         </section>

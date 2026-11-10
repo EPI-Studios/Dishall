@@ -16,6 +16,13 @@ export type ServerType = {
   bumped: boolean;
 };
 
+export type UserType = {
+  id: number;
+  discord_id: string;
+  avatar: string;
+  pseudo: string;
+}
+
 export type CategoryType = {
   id: number;
   name: string;

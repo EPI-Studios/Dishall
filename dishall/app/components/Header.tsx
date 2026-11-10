@@ -1,9 +1,14 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import NavBar from "./Navbar";
 import { Icon } from "@iconify/react";
+import { useUser } from "@/lib/getUser";
 
 export default function Header() {
+  const { user, loading, logout } = useUser();
+
   return (
     <header className="relative z-30 m-6 flex items-center justify-between lg:absolute lg:inset-x-0 lg:top-0 lg:m-0 lg:px-10 lg:py-6">
       <div className="relative z-50 flex items-center">
@@ -34,25 +39,53 @@ export default function Header() {
       </div>
 
       <div className="hidden items-center gap-4 text-sm lg:flex">
-        <a className="hover:font-bold lg:text-xl" href="/api/auth/discord/login">
-          Connexion
-        </a>
-        <a
-          href="http://discord.com"
-          aria-label="Logo Discord"
-          className="flex size-12 items-center justify-center rounded-full bg-[#5865F2]"
-        >
-          <Icon
-            icon="radix-icons:discord-logo"
-            width="30"
-            height="30"
-            color="var(--color-white)"
-          />
-        </a>
+        {loading ? (
+          <div className="size-12 rounded-full bg-white/10" />
+        ) : user ? (
+          <>
+          <Link className="hover:font-bold lg:text-xl mr-8" href="/add">
+            Ajouter mon serveur
+            </Link>
+            <Link className="hover:font-bold lg:text-xl mr-8" href="/profil">
+            Mon Profil
+            </Link>
+            <button className="hover:font-bold lg:text-xl mr-8" onClick={logout}>
+            Déconnexion
+            </button>
+            <Image
+              src={user.avatar}
+              width={48}
+              height={48}
+              alt={`Avatar de ${user.pseudo}`}
+              className="size-12 rounded-full object-cover"
+            />
+          </>
+        ) : (
+          <>
+            <a
+              className="hover:font-bold lg:text-xl"
+              href="/api/auth/discord/login"
+            >
+              Connexion
+            </a>
+            <a
+              href="http://discord.com"
+              aria-label="Logo Discord"
+              className="flex size-12 items-center justify-center rounded-full bg-[#5865F2]"
+            >
+              <Icon
+                icon="radix-icons:discord-logo"
+                width="30"
+                height="30"
+                color="var(--color-white)"
+              />
+            </a>
+          </>
+        )}
       </div>
 
       {/* Navbar pour téléphone */}
-      <NavBar />
+      <NavBar user={user} logout={logout}/>
     </header>
   );
 }
