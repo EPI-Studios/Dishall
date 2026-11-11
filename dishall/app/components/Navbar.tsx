@@ -80,7 +80,7 @@ export default function NavBar({ user, logout }: NavBarProps) {
             Catégories
           </Link>
           <Link
-            href="/add"
+            href="/api/auth/discord/guild/login"
             onClick={() => setIsOpen(false)}
             className="text-center rounded-xl w-[90%] py-[30px] bg-pink-500/5"
           >

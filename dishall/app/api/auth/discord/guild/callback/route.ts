@@ -1,12 +1,13 @@
+import jwt, { JwtPayload } from "jsonwebtoken";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
-import { redirect } from "next/navigation";
 
 const discordGuildSchema = z.object({
   id: z.string(),
   name: z.string(),
   icon: z.string().nullable(),
+  banner: z.string().nullable(),
   owner: z.boolean(),
   approximate_member_count: z.number().optional(),
 });
@@ -17,13 +18,13 @@ export async function GET(request: NextRequest) {
 
   if (!code) {
     console.error("code non trouvé")
-    redirect("/")
+    return NextResponse.redirect(new URL("/", request.url))
   }
 
   const {
     DISCORD_CLIENT_ID,
     DISCORD_CLIENT_SECRET,
-    DISCORD_REDIRECT_URI,
+    DISCORD_GUILD_REDIRECT_URI,
     JWT_SECRET,
     CLIENT_REDIRECT_URL,
   } = process.env;
@@ -32,16 +33,32 @@ export async function GET(request: NextRequest) {
   if (
     !DISCORD_CLIENT_ID ||
     !DISCORD_CLIENT_SECRET ||
-    !DISCORD_REDIRECT_URI ||
+    !DISCORD_GUILD_REDIRECT_URI ||
     !JWT_SECRET ||
     !CLIENT_REDIRECT_URL
   ) {
     return NextResponse.json(
-      { error: "Configuration serveur invalide" },
+      { error: "Erreur serveur" },
       { status: 500 }, // Internal server error
     );
   }
 
+  // on récupère le user avec son cookie
+  const sessionToken = request.cookies.get("token")?.value;
+    
+  if (!sessionToken) {
+    return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+  }
+
+  const payload = jwt.verify(sessionToken, JWT_SECRET) as JwtPayload;
+
+  const discordId = payload.sub;
+ 
+  if (!discordId) {
+    return NextResponse.redirect(("/"));
+  }
+    
+  
   // On envoie le code pour recevoir un access token
   const tokenResponse = await fetch("https://discord.com/api/oauth2/token", {
     method: "POST",
@@ -53,7 +70,7 @@ export async function GET(request: NextRequest) {
       client_secret: DISCORD_CLIENT_SECRET,
       grant_type: "authorization_code",
       code,
-      redirect_uri: DISCORD_REDIRECT_URI,
+      redirect_uri: DISCORD_GUILD_REDIRECT_URI,
     }),
   });
 
@@ -66,18 +83,65 @@ export async function GET(request: NextRequest) {
 
   const { access_token } = await tokenResponse.json();
 
-  // Récupération du profil Discord
-  const userResponse = await fetch("https://discord.com/api/users/@me/guilds", {
+  // Récupération des guilds de l'user
+  const guildsResponse = await fetch("https://discord.com/api/users/@me/guilds?with_counts=true", {
     headers: { Authorization: `Bearer ${access_token}` },
   });
 
-  if (!userResponse.ok) {
+  if (!guildsResponse.ok) {
     return NextResponse.json(
       { error: "Erreur lors de l'envoi du token" },
       { status: 500 }, // Internal server error
     );
   }
 
-  console.log(userResponse);
-  return userResponse.json();
+  const parsed = z.array(discordGuildSchema).safeParse(await guildsResponse.json());
+
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Réponse Discord inattendue" }, { status: 502 }); // Bad Gateway
+  };
+
+  const guilds = parsed.data;
+
+  const ownerGuilds = guilds.filter((guild) => guild.owner === true);
+
+  // On crée le ou les serveurs si il n'est pas dans la base de donnée
+  // transaction permet de regrouper plusieurs serveurs pour les ajouter, soit tout est crée ou rien n'est crée
+  await prisma.$transaction(
+    ownerGuilds.map((guild) => 
+      prisma.server.upsert({
+        where: { guild_id: guild.id },
+        create: {
+          guild_id: guild.id,
+          name: guild.name,
+          description: "",
+          link: "",
+          status: "pending",
+          banner: "",
+          category: "",
+          country: "FR", // valeur par défaut
+          user: { connect: { discord_id: discordId } },
+          icon: guild.icon ?? "",
+          serverStats: {
+            create: { users_nb: guild.approximate_member_count ?? 0 },
+          },
+        },
+        update: {
+          name: guild.name,
+          icon: guild.icon ?? "",
+
+          serverStats: {
+            update: {
+              users_nb: guild.approximate_member_count ?? 0
+            }
+            
+          }
+        },
+      })
+  ));
+
+  const redirectUrl = new URL("/profil", CLIENT_REDIRECT_URL);
+
+  return NextResponse.redirect(redirectUrl);
 }
+

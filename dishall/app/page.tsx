@@ -4,7 +4,7 @@ import Hero from "./components/Hero";
 import { Icon } from "@iconify/react";
 import { ServerType } from "@/@types/type";
 import { Suspense } from "react";
-import { getServers } from "@/lib/servers";
+import { getServers } from "@/lib/servers/servers.server";
 
 async function ServersSection() {
   const servers = await getServers();

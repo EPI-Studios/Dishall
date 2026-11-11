@@ -1,9 +1,11 @@
-import type { ServerType } from "../@types/type";
+import "server-only";
+
+import type { ServerType } from "../../@types/type";
 
 export async function getServers(): Promise<ServerType[]> {
   "use cache"
-
   const httpResponse = await fetch(`${process.env.API_URL}/servers`);
+  
   if (!httpResponse.ok) {
     throw new Error("Impossible de charger les serveurs")
   }

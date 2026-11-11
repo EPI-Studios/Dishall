@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     !CLIENT_REDIRECT_URL
   ) {
     return NextResponse.json(
-      { error: "Configuration serveur invalide" },
+      { error: "Erreur serveur" },
       { status: 500 }, // Internal server error
     );
   }
@@ -81,9 +81,10 @@ export async function GET(request: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json(
       { error: "Profil Discord invalide" },
-      { status: 502 },
+      { status: 502 }, // Bad gateway
     );
   }
+
   const { id, global_name, avatar: discordAvatar } = parsed.data;
 
   const avatar = discordAvatar

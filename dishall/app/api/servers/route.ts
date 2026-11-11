@@ -16,10 +16,10 @@ export async function GET() {
           tag: { select: { name: true } },
         },
       },
-      serverStats: { 
-        select: { 
-          users_nb: true, 
-          server_bump: true
+      serverStats: {
+        select: {
+          users_nb: true,
+          server_bump: true,
         },
       },
       critics: {
@@ -40,3 +40,5 @@ export async function GET() {
 
   return NextResponse.json(result);
 }
+
+

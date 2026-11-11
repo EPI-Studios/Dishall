@@ -26,3 +26,30 @@ export function useUser() {
 
   return { user, loading, logout };
 }
+
+export async function handleUpdateUser(discord_id: string, pseudo: string, avatar: string) {
+  const updatedUser = {
+    pseudo,
+    avatar
+  };
+
+  try {
+    const response = await fetch(`/api/users/${discord_id}`, 
+      {
+        method: "PATCH",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(updatedUser),
+      }, 
+    );
+    
+    if (!response.ok) {
+      console.error("Echec de la modification");
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
+

@@ -2,6 +2,7 @@ export type ServerType = {
   id: number;
   uuid: string;
   name: string;
+  guild_id: string;
   tags: string[];
   serverStats: serverStatsType;
   rating: number;
@@ -14,6 +15,7 @@ export type ServerType = {
   country: string;
   link: string;
   bumped: boolean;
+  owner: boolean;
 };
 
 export type UserType = {

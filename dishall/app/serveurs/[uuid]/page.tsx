@@ -7,7 +7,7 @@ import Footer from "@/app/components/Footer";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { Icon } from "@iconify/react";
-import { getServerByUuid, getServers } from "@/lib/servers";
+import { getServerByUuid, getServers } from "@/lib/servers/servers.server";
 import { getReviewsByServerUuid } from "@/lib/reviews";
 import { Suspense } from "react";
 

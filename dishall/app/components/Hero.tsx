@@ -1,7 +1,7 @@
 import Header from "./Header";
 import Link from "next/link";
 import ServerSearchBar from "./ServerSearchBar";
-import { getServers } from "@/lib/servers";
+import { getServers } from "@/lib/servers/servers.server";
 
 type HeroProps = {
   variant?: "home" | "search";
@@ -52,7 +52,7 @@ export default async function Hero({ variant = "search" }: HeroProps) {
                 serveurs
               </Link>
               <Link 
-                className="lg:h-[70px] lg:w-[200px] h-[45px] w-[135px] lg:text-xl flex items-center justify-center rounded-xl border-2 border-pink bg-dark text-sm tracking-[0.05em] text-[var(--color-white)] shadow-[0_0_10px_var(--color-pink)] hover:font-bold"
+                className="lg:h-[70px] lg:w-[200px] h-[45px] w-[135px] lg:text-xl flex items-center justify-center rounded-xl border-2 border-pink bg-dark text-sm tracking-[0.05em] text-[var(--color-white)] shadow-[0_0_10px_var(--color-pink)] cursor-default"
                 href="/api/auth/discord/guild/login"
               >
                 Ajouter le mien

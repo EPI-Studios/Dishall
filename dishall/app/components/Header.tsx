@@ -43,7 +43,7 @@ export default function Header() {
           <div className="size-12 rounded-full bg-white/10" />
         ) : user ? (
           <>
-          <Link className="hover:font-bold lg:text-xl mr-8" href="/add">
+          <Link className="hover:font-bold lg:text-xl mr-8" href="/api/auth/discord/guild/login">
             Ajouter mon serveur
             </Link>
             <Link className="hover:font-bold lg:text-xl mr-8" href="/profil">

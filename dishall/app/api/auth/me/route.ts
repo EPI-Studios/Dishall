@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   const { JWT_SECRET } = process.env;
 
   if (!JWT_SECRET) {
-    return NextResponse.json({ error: "Configuration serveur invalide" }, { status: 500 }); // Internal server error
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 }); // Internal server error
   }
 
   if (!token) {

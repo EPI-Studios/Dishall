@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import Footer from "../components/Footer";
 import Hero from "../components/Hero";
 import ServerFilter from "../components/ServerFilter";
-import { getServers } from "@/lib/servers";
+import { getServers } from "@/lib/servers/servers.server";
 
 async function ServersSection() {
   const servers = await getServers();

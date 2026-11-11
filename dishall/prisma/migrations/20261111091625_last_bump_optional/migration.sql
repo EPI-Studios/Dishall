@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "server_stats" ALTER COLUMN "last_bump_at" DROP NOT NULL,
+ALTER COLUMN "created_at" SET DEFAULT CURRENT_TIMESTAMP;
