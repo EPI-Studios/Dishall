@@ -4,30 +4,82 @@ import Hero from "./components/Hero";
 import { Icon } from "@iconify/react";
 import { ServerType } from "@/@types/type";
 import { Suspense } from "react";
-import { getServers } from "@/lib/servers/servers.server";
+import { getLatestServers, getServers } from "@/lib/servers/servers.server";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "DisHall | Accueil",
+};
 
 async function ServersSection() {
+  const lastestServers = await getLatestServers();
+  return (
+    <div className="grid gap-4 lg:grid-cols-2">
+      {lastestServers.map((server: ServerType) => (
+        <ServerCard key={server.id} server={server} />
+      ))}
+    </div>
+  );
+}
+
+async function StatsSection() {
   const servers = await getServers();
-  return <div className="grid gap-4 lg:grid-cols-2">
-            {servers.slice(1, 5).map((server: ServerType) => (
-              <ServerCard key={server.id} server={server} />
-            ))}
-          </div>
+  const totalMembers = servers.reduce((total, server) => {
+    return total + server.members;
+  }, 0);
+  const bumpedServers = servers.filter((server) => {
+    return server.bumped === true;
+  });
+
+  return (
+    <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+      <div className="flex items-center justify-center gap-3 rounded-xl border-2 border-pink p-4 shadow-[0_0_10px_var(--color-pink)]">
+        <Icon
+          icon="radix-icons:server"
+          width="50"
+          height="50"
+          color="var(--color-pink)"
+          aria-hidden="true"
+        />
+        <p className="flex flex-col items-center leading-tight">
+          <span className="text-2xl font-bold">{servers.length}</span> Serveurs
+        </p>
+      </div>
+
+      <div className="flex items-center justify-center gap-3 rounded-xl border-2 border-pink p-4 shadow-[0_0_10px_var(--color-pink)]">
+        <Icon
+          icon="radix-icons:people"
+          width="50"
+          height="50"
+          color="var(--color-pink)"
+          aria-hidden="true"
+        />
+        <p className="flex flex-col items-center leading-tight">
+          <span className="text-2xl font-bold">{totalMembers}</span> Membres
+        </p>
+      </div>
+
+      <div className="hidden items-center justify-center gap-3 rounded-xl border-2 border-pink p-4 lg:flex shadow-[0_0_10px_var(--color-pink)]">
+        <Icon
+          icon="radix-icons:rocket"
+          width="50"
+          height="50"
+          color="var(--color-pink)"
+          aria-hidden="true"
+        />
+        <p className="flex flex-col items-center text-center leading-tight">
+          <span className="text-2xl font-bold">{bumpedServers.length}</span>{" "}
+          Serveurs bumpés
+        </p>
+      </div>
+    </div>
+  );
 }
 
 export default async function Home() {
-  const servers = await getServers();
-  const totalMembers = servers.reduce((total, server) => {
-    return total + server.members
-  }, 0);
-
-  const bumpedServers = servers.filter((server) => {
-    return server.bumped === true;
-  })
-
   return (
     <>
-      <Hero variant="home"/>
+      <Hero variant="home" />
 
       <main className="lg:mx-auto lg:max-w-4xl">
         <section className="mx-6 mb-8 lg:mb-12">
@@ -45,46 +97,9 @@ export default async function Home() {
             Statistiques
           </h3>
 
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
-            <div className="flex items-center justify-center gap-3 rounded-xl border-2 border-pink p-4 shadow-[0_0_10px_var(--color-pink)]">
-              <Icon
-                icon="radix-icons:server"
-                width="50"
-                height="50"
-                color="var(--color-pink)"
-                aria-hidden="true"
-              />
-              <p className="flex flex-col items-center leading-tight">
-                <span className="text-2xl font-bold">{servers.length}</span> Serveurs
-              </p>
-            </div>
-
-            <div className="flex items-center justify-center gap-3 rounded-xl border-2 border-pink p-4 shadow-[0_0_10px_var(--color-pink)]">
-              <Icon
-                icon="radix-icons:people"
-                width="50"
-                height="50"
-                color="var(--color-pink)"
-                aria-hidden="true"
-              />
-              <p className="flex flex-col items-center leading-tight">
-                <span className="text-2xl font-bold">{totalMembers}</span> Membres
-              </p>
-            </div>
-
-            <div className="hidden items-center justify-center gap-3 rounded-xl border-2 border-pink p-4 lg:flex shadow-[0_0_10px_var(--color-pink)]">
-              <Icon
-                icon="radix-icons:rocket"
-                width="50"
-                height="50"
-                color="var(--color-pink)"
-                aria-hidden="true"
-              />
-              <p className="flex flex-col items-center text-center leading-tight">
-                <span className="text-2xl font-bold">{bumpedServers.length}</span> Serveurs bumpés
-              </p>
-            </div>
-          </div>
+          <Suspense fallback={<p>Chargement...</p>}>
+            <StatsSection />
+          </Suspense>
         </section>
 
         <section className="mx-6 mb-8 lg:mb-12 flex justify-center">
@@ -97,7 +112,9 @@ export default async function Home() {
               aria-hidden="true"
               className="transition-transform duration-300 ease-out group-hover:-translate-x-3 group-hover:-rotate-6"
             />
-            <span className="font-title text-2xl transition-transform duration-200 group-hover:scale-110 ">Bump mon serveur</span>
+            <span className="font-title text-2xl transition-transform duration-200 group-hover:scale-110 ">
+              Bump mon serveur
+            </span>
           </button>
         </section>
       </main>

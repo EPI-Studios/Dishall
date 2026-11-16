@@ -26,6 +26,7 @@ model Server {
   status      String @db.VarChar(20)
   user        User   @relation(fields: [user_id], references: [id])
   user_id     Int
+  created_at  DateTime @default(now())
 
   serverStats Server_Stats?
   score       Score?

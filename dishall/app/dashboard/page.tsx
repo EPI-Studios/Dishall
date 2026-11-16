@@ -1,23 +1,16 @@
-"use client";
-
 import Link from "next/link";
 import Header from "@/app/components/Header";
 import Footer from "@/app/components/Footer";
 import UserSection from "./components/UserSection";
 import ServersSection from "./components/ServersSection";
 import { Icon } from "@iconify/react";
-import { useUser } from "@/lib/getUser";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "DisHall | Dashboard",
+};
 
 export default function DashboardPage() {
-  const { user, loading } = useUser();
-
-  if (loading) {
-    return <p>Chargement du profil...</p>;
-  }
-
-  if (!user) {
-    return <p>Utilisateur non connecté</p>;
-  }
 
   return (
     <>
@@ -41,7 +34,7 @@ export default function DashboardPage() {
           Mon profil
         </h3>
 
-        <UserSection user={user} />
+        <UserSection />
 
         <h3 className="lg:text-2xl font-title text-gradient-subtitle mb-4 text-center text-lg tracking-[0.1em] uppercase">
           Mes serveurs

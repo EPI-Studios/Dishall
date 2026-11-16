@@ -2,14 +2,18 @@ import Header from "./Header";
 import Link from "next/link";
 import ServerSearchBar from "./ServerSearchBar";
 import { getServers } from "@/lib/servers/servers.server";
+import { Suspense } from "react";
 
 type HeroProps = {
   variant?: "home" | "search";
 }
 
-export default async function Hero({ variant = "search" }: HeroProps) {
-
+async function SearchBarServers() {
   const servers = await getServers();
+  return <ServerSearchBar servers={servers} />
+}
+
+export default function Hero({ variant = "search" }: HeroProps) {
 
   if (variant === "home") {
     return (
@@ -84,7 +88,9 @@ export default async function Hero({ variant = "search" }: HeroProps) {
             DISHALL
           </p>
 
-          <ServerSearchBar servers={servers}/>
+          <Suspense fallback={null}>
+            <SearchBarServers />
+          </Suspense>
         </section>
       </div>
     );

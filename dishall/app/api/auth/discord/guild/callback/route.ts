@@ -140,7 +140,7 @@ export async function GET(request: NextRequest) {
       })
   ));
 
-  const redirectUrl = new URL("/profil", CLIENT_REDIRECT_URL);
+  const redirectUrl = new URL("/dashboard", CLIENT_REDIRECT_URL);
 
   return NextResponse.redirect(redirectUrl);
 }

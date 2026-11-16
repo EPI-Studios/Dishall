@@ -3,6 +3,11 @@ import Footer from "../components/Footer";
 import Hero from "../components/Hero";
 import ServerFilter from "../components/ServerFilter";
 import { getServers } from "@/lib/servers/servers.server";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "DisHall | Serveurs",
+};
 
 async function ServersSection() {
   const servers = await getServers();

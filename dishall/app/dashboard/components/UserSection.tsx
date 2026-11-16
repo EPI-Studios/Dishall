@@ -1,11 +1,14 @@
+"use client"
+
 import Image from "next/image";
 import { Icon } from "@iconify/react";
 import { UserType } from "@/@types/type";
 import { useState } from "react";
-import { handleUpdateUser } from "@/lib/getUser";
+import { handleUpdateUser, useUser } from "@/lib/getUser";
 
-export default function UserSection({ user }: { user: UserType }) {
+export default function UserSection() {
   
+  const { user, loading } = useUser();
   const [userUpdate, setUserUpdate] = useState<UserType | null>(null);
 
   const handleAction = async (formData: FormData) => {
@@ -20,7 +23,15 @@ export default function UserSection({ user }: { user: UserType }) {
     } catch (error) {
       console.error(error);
     }
-  };
+  }; 
+
+  if (loading) {
+    return <p>Chargement du profil...</p>;
+  }
+
+  if (!user) {
+    return <p>Utilisateur non connecté</p>;
+  }
 
   return (
     <section className="relative mb-16 rounded-xl border-2 border-pink bg-dark p-4 shadow-[0_0_10px_var(--color-pink)]">
@@ -67,6 +78,9 @@ export default function UserSection({ user }: { user: UserType }) {
                 type="text"
                 className="border text-center border-pink rounded-xl p-2"
                 placeholder={user.pseudo}
+                minLength={2}
+                maxLength={50}
+                required
               />
             </div>
 

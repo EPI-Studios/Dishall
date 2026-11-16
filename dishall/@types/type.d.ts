@@ -16,6 +16,7 @@ export type ServerType = {
   link: string;
   bumped: boolean;
   owner: boolean;
+  created_at: Date;
 };
 
 export type UserType = {

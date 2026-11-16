@@ -7,31 +7,23 @@ import Footer from "@/app/components/Footer";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { Icon } from "@iconify/react";
-import { getServerByUuid, getServers } from "@/lib/servers/servers.server";
+import { getServerByUuid } from "@/lib/servers/servers.server";
 import { getReviewsByServerUuid } from "@/lib/reviews";
 import { Suspense } from "react";
 import discordServerIcon from "@/util/discordImage";
 
 type Props = { params: Promise<{ uuid: string }> };
 
-export async function generateStaticParams() {
-  const servers = await getServers();
-  return servers.map((server) => ({ uuid: String(server.uuid) }));
-}
-
-// Titre de l'onglet du navigateur, propre à chaque serveur
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { uuid } = await params;
-  const server = await getServerByUuid(uuid);
-  return { title: server ? `${server.name} | DisHall` : "Serveur introuvable" };
-}
+export const metadata: Metadata = {
+  title: "DisHall | Serveur",
+};
 
 export default async function ServerPage({ params }: Props) {
   return (
     <>
       <Header />
 
-      <main className="mx-6 lg:mx-auto lg:mt-32 lb:mb-24 lg:max-w-4xl">
+      <main className="mx-6 lg:mx-auto lg:mt-32 lg:mb-24 lg:max-w-4xl">
         <Link
           href="/serveurs"
           className="mb-6 inline-flex items-center gap-2 text-sm transition hover:text-pink"

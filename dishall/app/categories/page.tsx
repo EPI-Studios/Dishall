@@ -2,6 +2,11 @@ import Footer from "../components/Footer";
 import Hero from "../components/Hero";
 import { categories } from "../../data/categories";
 import CategoryFilter from "../components/CategoryFilter";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "DisHall | Catégories",
+};
 
 export default function Categories() {
 
