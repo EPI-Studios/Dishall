@@ -116,7 +116,7 @@ export async function GET(request: NextRequest) {
           name: guild.name,
           description: "",
           link: "",
-          status: "pending",
+          status: "approved",
           banner: "",
           category: "",
           country: "FR", // valeur par défaut

@@ -6,7 +6,6 @@ import { handleUpdateUser } from "@/lib/getUser";
 
 export default function UserSection({ user }: { user: UserType }) {
   
-  
   const [userUpdate, setUserUpdate] = useState<UserType | null>(null);
 
   const handleAction = async (formData: FormData) => {
@@ -32,6 +31,7 @@ export default function UserSection({ user }: { user: UserType }) {
           height={130}
           alt={`Image de profil de ${user.pseudo}`}
           className="size-20 shrink-0 rounded-xl object-cover shadow-[0_0_10px_var(--color-pink)] lg:size-32"
+          loading="eager"
         />
 
         <div className="flex min-w-0 items-center gap-4">
@@ -48,6 +48,7 @@ export default function UserSection({ user }: { user: UserType }) {
               width="30"
               height="30"
               color="var(--color-white)"
+              className="cursor-pointer"
             />
           </button>
         </div>

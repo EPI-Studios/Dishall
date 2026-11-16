@@ -10,6 +10,7 @@ import { Icon } from "@iconify/react";
 import { getServerByUuid, getServers } from "@/lib/servers/servers.server";
 import { getReviewsByServerUuid } from "@/lib/reviews";
 import { Suspense } from "react";
+import discordServerIcon from "@/util/discordImage";
 
 type Props = { params: Promise<{ uuid: string }> };
 
@@ -85,7 +86,7 @@ async function ServerContent({ params }: Props) {
         <div className="grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-3 lg:grid-cols-[auto_1fr_auto_auto] lg:gap-x-6">
           {server.icon && (
             <Image
-            src={server.icon}
+            src={discordServerIcon(server.guild_id, server.icon)} 
             width={130}
             height={130}
             alt={`Logo du serveur ${server.name}`}
@@ -93,7 +94,6 @@ async function ServerContent({ params }: Props) {
           />
           )}
           
-
           <div className="flex min-w-0 flex-col gap-3">
             <div className="flex min-w-0 items-center gap-3">
               <h1 className="min-w-0 truncate text-2xl font-bold lg:text-4xl">

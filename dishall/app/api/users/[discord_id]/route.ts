@@ -47,7 +47,7 @@ export async function PATCH(
     return NextResponse.json({ error: "User introuvable" }, { status: 404 }); // Not found
   }
 
-  if (user.discord_id != discordId) {
+  if (user.discord_id !== discordId) {
     return NextResponse.json(
       { error: "Interdit" },
       { status: 403 }, // Forbidden

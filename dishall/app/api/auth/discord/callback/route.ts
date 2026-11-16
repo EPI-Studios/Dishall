@@ -96,7 +96,6 @@ export async function GET(request: NextRequest) {
   await prisma.user.upsert({
     where: { discord_id: id },
     update: {
-      pseudo: global_name,
       avatar: avatar,
     },
     create: {

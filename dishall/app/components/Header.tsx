@@ -46,8 +46,8 @@ export default function Header() {
           <Link className="hover:font-bold lg:text-xl mr-8" href="/api/auth/discord/guild/login">
             Ajouter mon serveur
             </Link>
-            <Link className="hover:font-bold lg:text-xl mr-8" href="/profil">
-            Mon Profil
+            <Link className="hover:font-bold lg:text-xl mr-8" href="/dashboard">
+            Dashboard
             </Link>
             <button className="hover:font-bold lg:text-xl mr-8" onClick={logout}>
             Déconnexion

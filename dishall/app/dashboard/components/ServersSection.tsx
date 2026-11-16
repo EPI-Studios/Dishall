@@ -5,11 +5,15 @@ import { useEffect, useState } from "react";
 import {
   getServersByUser,
   handleDeleteServer,
+  handleUpdateServer,
 } from "@/lib/servers/servers.client";
+import discordServerIcon from "@/util/discordImage";
 
 export default function ServersSection() {
-  const [serverToDelete, setServerToDelete] = useState<ServerType | null>(null);
   const [servers, setServers] = useState<ServerType[]>([]);
+  const [serverUpdate, setServerUpdate] = useState<ServerType | null>(null);
+  const [serverToDelete, setServerToDelete] = useState<ServerType | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchServers() {
@@ -22,16 +26,6 @@ export default function ServersSection() {
     }
     fetchServers();
   }, []);
-
-  function discordServerIcon(guildId: string, icon: string) {
-    if (!icon) {
-      return "/profil.png";
-    }
-
-    const extension = icon.startsWith("a_") ? "gif" : "webp";
-
-    return `https://cdn.discordapp.com/icons/${guildId}/${icon}.${extension}`;
-  }
 
   async function confirmDelete() {
     if (!serverToDelete) return;
@@ -47,6 +41,33 @@ export default function ServersSection() {
       console.error(error);
     }
   }
+
+  const handleAction = async (formData: FormData) => {
+    if (!serverUpdate) return;
+    setFormError(null);
+
+    const name = formData.get("name") as string;
+    const description = formData.get("description") as string;
+    const country = formData.get("country") as string;
+    const category = formData.get("category") as string;
+    const link = formData.get("link") as string;
+
+    try {
+      await handleUpdateServer(
+        serverUpdate.uuid,
+        name,
+        description,
+        country,
+        category,
+        link,
+      );
+      setServerUpdate(null);
+    } catch (error) {
+      setFormError(
+        error instanceof Error ? error.message : "Une erreur est survenue",
+      );
+    }
+  };
 
   return (
     <>
@@ -78,12 +99,14 @@ export default function ServersSection() {
             <button
               aria-label="Modifier le serveur"
               className="flex size-10 items-center justify-center rounded-full bg-pink lg:absolute lg:-right-5 lg:top-6"
+              onClick={() => { setFormError(null); setServerUpdate(server); }}
             >
               <Icon
                 icon="radix-icons:pencil-1"
                 width="30"
                 height="30"
                 color="var(--color-white)"
+                className="cursor-pointer"
               />
             </button>
             <button
@@ -96,6 +119,7 @@ export default function ServersSection() {
                 width="30"
                 height="30"
                 color="var(--color-white)"
+                className="cursor-pointer"
               />
             </button>
           </div>
@@ -132,6 +156,82 @@ export default function ServersSection() {
             </div>
           </div>
         </div>
+      )}
+
+      {serverUpdate && (
+        <form
+          action={handleAction}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-6"
+        >
+          <div className="flex flex-col rounded-xl border-2 border-pink bg-dark p-6 text-center shadow-[0_0_10px_var(--color-pink)]">
+            <div className="flex flex-col items-center justify-center mb-8">
+              <label className="text-xl mb-2">Nom du serveur</label>
+              <input
+                name="name"
+                type="text"
+                className="border text-center border-pink rounded-xl p-2 mb-4"
+                placeholder={serverUpdate.name}
+              />
+
+              <label className="text-xl mb-2">Description</label>
+              <textarea
+                name="description"
+                className="border text-center border-pink rounded-xl px-16 pb-16 mb-4"
+                placeholder="Minimun 50 caractères"
+              />
+
+              <label className="text-xl mb-2">Catégorie</label>
+              <input
+                name="category"
+                type="text"
+                className="border text-center border-pink rounded-xl p-2 mb-4"
+                placeholder="Musique"
+              />
+
+              <label className="text-xl mb-2">Pays du serveur</label>
+              <select
+                name="country"
+                className="border text-center border-pink rounded-xl p-2 mb-4"
+              >
+                <option value="">Choisis un pays</option>
+                <option value="FR">France</option>
+                <option value="US">Etats-Unis</option>
+                <option value="UK">Royaume-Uni</option>
+                <option value="CA">Canada</option>
+                <option value="DE">Allemagne</option>
+              </select>
+
+              <label className="text-xl mb-2">Lien du serveur</label>
+              <input
+                name="link"
+                type="url"
+                className="border text-center border-pink rounded-xl p-2 mb-4"
+              />
+            </div>
+
+            {formError && (
+              <p className="mb-4 z-60 text-red-500">
+                {formError}
+              </p>
+            )}
+
+            <div className="flex justify-center gap-4">
+              <button
+                type="submit"
+                className="rounded-xl border-2 border-pink bg-pink px-4 py-2 font-bold text-[var(--color-white)]"
+              >
+                Valider
+              </button>
+              <button
+                type="button"
+                className="rounded-xl border-2 border-pink px-4 py-2 text-[var(--color-white)]"
+                onClick={() => { setFormError(null); setServerUpdate(null); }}
+              >
+                Annuler
+              </button>
+            </div>
+          </div>
+        </form>
       )}
     </>
   );

@@ -60,8 +60,8 @@ export default function NavBar({ user, logout }: NavBarProps) {
                 alt={`Avatar de ${user.pseudo}`}
                 className="size-12 rounded-full object-cover"
               />
-              <Link className="hover:font-bold lg:text-xl" onClick={() => setIsOpen(false)} href="/profil">
-                Mon Profil
+              <Link className="hover:font-bold lg:text-xl" onClick={() => setIsOpen(false)} href="/dashboard">
+                Dashboard
               </Link>
             </div>
           )}

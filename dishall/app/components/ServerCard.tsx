@@ -5,6 +5,7 @@ import Link from "next/link";
 import StarRating from "./StarRating";
 import { Icon } from "@iconify/react";
 import type { ServerType } from "@/@types/type";
+import discordServerIcon from "@/util/discordImage";
 
 export default function ServerCard({ server }: { server: ServerType }) {
   const countryCode = server.country?.trim().toLowerCase() ?? "eu";
@@ -15,7 +16,7 @@ export default function ServerCard({ server }: { server: ServerType }) {
         <div className="flex items-start gap-3">
           {server.icon ? (
             <Image
-              src={server.icon}
+              src={discordServerIcon(server.guild_id, server.icon)} 
               width={50}
               height={50}
               alt={`Logo du serveur ${server.name}`}

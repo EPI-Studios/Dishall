@@ -8,7 +8,7 @@ import ServersSection from "./components/ServersSection";
 import { Icon } from "@iconify/react";
 import { useUser } from "@/lib/getUser";
 
-export default function ProfilPage() {
+export default function DashboardPage() {
   const { user, loading } = useUser();
 
   if (loading) {
