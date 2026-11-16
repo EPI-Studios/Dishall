@@ -29,6 +29,7 @@ export type UserType = {
 export type CategoryType = {
   id: number;
   name: string;
+  slug: string;
   icon: string;
   description: string;
   nb_user: number;

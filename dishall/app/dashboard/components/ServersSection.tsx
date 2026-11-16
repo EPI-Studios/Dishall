@@ -76,7 +76,6 @@ export default function ServersSection() {
   return (
     <>
       {servers.map((server: ServerType) => (
-        <>
           <article key={server.uuid} className="relative mb-8 rounded-xl border-2 border-pink bg-dark p-4 shadow-[0_0_10px_var(--color-pink)]">
             <Link
               href={`/serveurs/${server.uuid}`}
@@ -134,7 +133,6 @@ export default function ServersSection() {
               </button>
             </div>
           </article>
-        </>
       ))}
 
       {serverToDelete && (
@@ -189,9 +187,9 @@ export default function ServersSection() {
               <label className="text-xl mb-2">Description</label>
               <textarea
                 name="description"
-                className="border text-center border-pink rounded-xl px-16 pb-16 mb-4"
+                className="border text-center border-pink rounded-xl px-10 pb-16 mb-4"
                 minLength={50}
-                placeholder="Minimum 50 caractères"
+                placeholder={serverUpdate.description}
               />
 
               <label className="text-xl mb-2">Catégorie</label>
@@ -199,9 +197,9 @@ export default function ServersSection() {
                 name="category"
                 className="border text-center border-pink rounded-xl p-2 mb-4"
               >
-                <option value="">Choisis une catégorie</option>
+                <option value={serverUpdate.category}>{serverUpdate.category}</option>
                 {categories.map((category) => (
-                  <option key={category.id} value={category.name}>
+                  <option key={category.id} value={category.slug}>
                     {category.name}
                   </option>
                 ))}
@@ -212,7 +210,7 @@ export default function ServersSection() {
                 name="country"
                 className="border text-center border-pink rounded-xl p-2 mb-4"
               >
-                <option value="">Choisis un pays</option>
+                <option value={serverUpdate.country}>{serverUpdate.country}</option>
                 <option value="FR">France</option>
                 <option value="US">Etats-Unis</option>
                 <option value="UK">Royaume-Uni</option>
@@ -225,6 +223,7 @@ export default function ServersSection() {
                 name="link"
                 type="url"
                 className="border text-center border-pink rounded-xl p-2 mb-4"
+                placeholder={serverUpdate.link}
               />
             </div>
 
