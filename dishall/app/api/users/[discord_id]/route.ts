@@ -1,57 +1,26 @@
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
-import jwt, { JwtPayload } from "jsonwebtoken";
 import { NextRequest, NextResponse } from "next/server";
+import { getCurrentUser } from "@/lib/auth/auth.server";
 
 const userDataValidation = z.object({
-  pseudo: z.string().optional()
+  pseudo: z.string().trim().min(2).max(50).optional(),
 });
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ discord_id: string }> },
 ) {
-  const token = request.cookies.get("token")?.value;
-  const { JWT_SECRET } = process.env;
-
-  if (!JWT_SECRET) {
-    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 }); // Internal server error
-  }
-
-  if (!token) {
+  
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
     return NextResponse.json({ error: "Non authentifié" }, { status: 401 }); // Unauthorized
-  }
-
-  let discordId: string;
-
-  try {
-    const payload = jwt.verify(token, JWT_SECRET) as JwtPayload;
-    if (!payload.sub) {
-      return NextResponse.json({ error: "Token invalide" }, { status: 401 });
-    }
-    discordId = payload.sub;
-  } catch {
-    return NextResponse.json(
-      { error: "Token invalide ou expiré" },
-      { status: 401 },
-    );
   }
 
   const { discord_id } = await params;
 
-  const user = await prisma.user.findUnique({
-    where: { discord_id },
-  });
-
-  if (!user) {
-    return NextResponse.json({ error: "User introuvable" }, { status: 404 }); // Not found
-  }
-
-  if (user.discord_id !== discordId) {
-    return NextResponse.json(
-      { error: "Interdit" },
-      { status: 403 }, // Forbidden
-    );
+  if (currentUser.sub !== discord_id) {
+    return NextResponse.json({ error: "Interdit" }, { status: 403 });  // Forbidden
   }
 
   const body = await request.json();
@@ -68,9 +37,10 @@ export async function PATCH(
     const updatedUser = await prisma.user.update({
       where: { discord_id },
       data,
+      select: { discord_id: true, pseudo: true, avatar: true },
     });
 
-    return Response.json(updatedUser, { status: 200 }); // No content
+    return Response.json(updatedUser, { status: 200 }); // OK
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 }); // Server Error

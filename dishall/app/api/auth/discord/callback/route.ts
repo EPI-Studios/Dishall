@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
 
   // On crée l'utilisateur si il n'est pas dans la base de donnée
   // upsert sert à créer ou modifier si l'user existe déjà en base
-  await prisma.user.upsert({
+  const user = await prisma.user.upsert({
     where: { discord_id: id },
     update: {
       avatar: avatar,
@@ -105,7 +105,7 @@ export async function GET(request: NextRequest) {
     },
   });
 
-  const token = jwt.sign({ sub: id }, JWT_SECRET, {
+  const token = jwt.sign({ sub: id, role: user.role }, JWT_SECRET, {
     expiresIn: "7d",
   });
 

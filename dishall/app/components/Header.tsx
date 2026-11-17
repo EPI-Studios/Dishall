@@ -35,6 +35,11 @@ export default function Header() {
           <Link className="hover:font-bold lg:text-xl" href="/categories">
             Catégories
           </Link>
+          { user?.role === "admin" && (
+            <Link className="hover:font-bold lg:text-xl" href="/admin">
+              Administration
+            </Link>
+          )} 
         </nav>
       </div>
 

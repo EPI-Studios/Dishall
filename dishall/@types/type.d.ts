@@ -24,6 +24,7 @@ export type UserType = {
   discord_id: string;
   avatar: string;
   pseudo: string;
+  role: string;
 }
 
 export type CategoryType = {

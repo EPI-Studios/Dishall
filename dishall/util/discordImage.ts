@@ -1,4 +1,4 @@
-export default function discordServerIcon(guildId: string, icon: string) {
+export default function discordServerIcon(guildId: string, icon: string | null) {
     if (!icon) {
       return "/profil.png";
     }
