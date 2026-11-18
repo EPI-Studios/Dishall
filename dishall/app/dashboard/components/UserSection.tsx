@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Icon } from "@iconify/react";
 import { UserType } from "@/@types/type";
 import { useState } from "react";
-import { handleUpdateUser, useUser } from "@/lib/getUser";
+import { handleUpdateUser, useUser } from "@/lib/users/users.client";
 
 export default function UserSection() {
   

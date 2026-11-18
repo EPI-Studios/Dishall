@@ -6,7 +6,8 @@ import { Metadata } from "next";
 import { Suspense } from "react";
 import ServersSection from "./ServersSection";
 import ViewSelect from "./ViewSelect";
-import UsersSection from "./UsersSections";
+import UsersSection from "./UsersSection";
+import ReviewsSection from "./ReviewsSection";
 
 export const metadata: Metadata = {
   title: "DisHall | Administration",
@@ -47,7 +48,7 @@ export default async function AdminPage({ searchParams }: Props) {
 
 async function AdminContent({ searchParams }: Props) {
   const { view, page } = await searchParams;
-  const currentView = view === "users" ? "users" : "servers"; 
+  const currentView = view === "servers" || view ==="reviews" ? view : "users"; 
   const currentPage = Math.max(1, Number(page) || 1);
 
   return (
@@ -56,11 +57,9 @@ async function AdminContent({ searchParams }: Props) {
         <ViewSelect current={currentView} />
       </div>
 
-      {currentView === "users" ? (
-        <UsersSection page={currentPage} />
-      ) : (
-        <ServersSection page={currentPage} />
-      )}
+      {currentView === "users" && <UsersSection page={currentPage} />}
+      {currentView === "servers" && <ServersSection page={currentPage} />}
+      {currentView === "reviews" && <ReviewsSection page={currentPage} />}
     </>
   );
 }

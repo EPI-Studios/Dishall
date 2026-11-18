@@ -53,7 +53,8 @@ export async function getAllServersForAdmin(page = 1) {
         status: true,
         guild_id: true,
         icon: true,
-        serverStats: { select: { users_nb: true } },
+        serverStats: { select: { users_nb: true, server_bump: true, last_bump_at: true } },
+        score: true
       },
     }),
     prisma.server.count(),
@@ -63,25 +64,3 @@ export async function getAllServersForAdmin(page = 1) {
 }
 
 
-export async function getAllUsersForAdmin(page = 1) {
-  const current = await getCurrentUser();
-  if (!current) return null;
-
-  const admin = await prisma.user.findUnique({
-    where: { discord_id: current.sub },
-    select: { role: true },
-  });
-  if (admin?.role !== "admin") return null;
-
-  const [users, total] = await prisma.$transaction([
-    prisma.user.findMany({
-      orderBy: [{ role: "desc" }, { id: "desc" }],
-      skip: (page - 1) * PAGE_SIZE,
-      take: PAGE_SIZE,
-      select: { discord_id: true, pseudo: true, avatar: true, role: true },
-    }),
-    prisma.user.count(),
-  ]);
-
-  return { users, totalPages: Math.max(1, Math.ceil(total / PAGE_SIZE)) };
-}

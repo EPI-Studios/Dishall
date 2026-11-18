@@ -4,7 +4,7 @@ import ReviewCard from "./ReviewCard";
 export default function LatestReviews({ reviews }: { reviews: ReviewType[] }) {
   // Les plus récents d'abord, 4 maximum. [...reviews] : sort() modifie sinon le tableau d'origine
   const latest = [...reviews]
-    .sort((a, b) => b.created_at.localeCompare(a.date))
+    .sort((a, b) => b.created_at.localeCompare(a.created_at))
     .slice(0, 4);
 
   return (

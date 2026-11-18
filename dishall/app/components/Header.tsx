@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import NavBar from "./Navbar";
 import { Icon } from "@iconify/react";
-import { useUser } from "@/lib/getUser";
+import { useUser } from "@/lib/users/users.client";
 
 export default function Header() {
   const { user, loading, logout } = useUser();
@@ -35,6 +35,11 @@ export default function Header() {
           <Link className="hover:font-bold lg:text-xl" href="/categories">
             Catégories
           </Link>
+          {(user?.role === "admin" || user?.role === "moderator") && (
+            <Link className="hover:font-bold lg:text-xl" href="/moderation">
+              Modération
+            </Link>
+          )} 
           { user?.role === "admin" && (
             <Link className="hover:font-bold lg:text-xl" href="/admin">
               Administration

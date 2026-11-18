@@ -39,11 +39,13 @@ export type CategoryType = {
 
 export type ReviewType = {
   id: number;
+  uuid: string
   serverUuid: string;
   rate: number;
+  status: string;
   comment: string;
   created_at: string;
-  user: UserType;
+  user: UserType | null;
 };
 
 export type ServerTagType = {
@@ -55,5 +57,10 @@ export type ServerTagType = {
 export type serverStatsType = {
   id: number;
   users_nb: number;
+  server_bump: string;
+  last_bump_at: string;
 }
+
+export type RoleType = "member" | "moderator";
+
 

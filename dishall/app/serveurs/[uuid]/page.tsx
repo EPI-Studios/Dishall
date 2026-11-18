@@ -8,7 +8,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { Icon } from "@iconify/react";
 import { getServerByUuid } from "@/lib/servers/servers.server";
-import { getReviewsByServerUuid } from "@/lib/reviews";
+import { getReviewsByServerUuid } from "@/lib/reviews/reviews.server";
 import { Suspense } from "react";
 import discordServerIcon from "@/util/discordImage";
 

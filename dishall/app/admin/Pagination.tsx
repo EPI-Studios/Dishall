@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 type Props = {
-  view: "servers" | "users";
+  view: "servers" | "users" | "reviews";
   currentPage: number;
   totalPages: number;
 };

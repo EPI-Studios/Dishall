@@ -1,5 +1,7 @@
+"use client"
+
 import type { ServerType } from "../../@types/type";
-import { inviteLinkSchema } from "../validation";
+import { inviteLinkSchema } from "../../util/validation";
 
 export async function getServersByUser(): Promise<ServerType[]> {
   const httpResponse = await fetch("http://localhost:3000/api/auth/me/servers");
@@ -66,4 +68,24 @@ export async function handleUpdateServer(uuid: string, name: string, description
   } catch (error) {
     console.error(error);
   }
-}
+};
+
+export async function handleUpdateServerStatus(uuid: string, status: string) {
+  let response: Response;
+
+  try {
+    response = await fetch(`/api/servers/${uuid}/role`, {
+      method: "PATCH",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+  } catch {
+    throw new Error("Impossible de contacter le serveur");
+  }
+
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    throw new Error(body?.error ?? "La modification a échoué");
+  }
+};

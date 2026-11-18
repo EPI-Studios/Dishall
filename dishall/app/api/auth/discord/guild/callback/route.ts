@@ -121,7 +121,7 @@ export async function GET(request: NextRequest) {
           category: "",
           country: "FR", // valeur par défaut
           user: { connect: { discord_id: discordId } },
-          icon: guild.icon ?? "",
+          icon: guild.icon ?? "https://cdn.discordapp.com/embed/avatars/0.png",
           serverStats: {
             create: { users_nb: guild.approximate_member_count ?? 0 },
           },

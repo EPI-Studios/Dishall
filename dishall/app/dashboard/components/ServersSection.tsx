@@ -140,7 +140,10 @@ export default function ServersSection() {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-6"
           onClick={() => setServerToDelete(null)}
         >
-          <div className="w-full max-w-md rounded-xl border-2 border-pink bg-dark p-6 text-center shadow-[0_0_10px_var(--color-pink)]">
+          <div 
+            className="w-full max-w-md rounded-xl border-2 border-pink bg-dark p-6 text-center shadow-[0_0_10px_var(--color-pink)]"
+            onClick={(e) => e.stopPropagation()} 
+          >
             <p className="mb-6 text-lg">
               Supprimer le serveur{" "}
               <span className="font-bold">{serverToDelete.name}</span> ? Cette

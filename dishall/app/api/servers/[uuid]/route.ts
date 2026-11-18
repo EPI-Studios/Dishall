@@ -3,7 +3,7 @@ import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { NextRequest, NextResponse } from "next/server";
-import { inviteLinkSchema } from "@/lib/validation";
+import { inviteLinkSchema } from "@/util/validation";
 
 const serverDataValidation = z.object({
   name: z.string().optional(),

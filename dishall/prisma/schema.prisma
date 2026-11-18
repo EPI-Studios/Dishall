@@ -24,7 +24,7 @@ model Server {
   icon        String?
   banner      String?
   status      String @db.VarChar(20)
-  user        User   @relation(fields: [user_id], references: [id])
+  user        User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
   user_id     Int
   created_at  DateTime @default(now())
 
@@ -34,6 +34,12 @@ model Server {
   tags        ServerHasTag[]
 
   @@map("server")
+}
+
+enum Status {
+  member
+  moderator
+  admin
 }
 
 model User {
@@ -98,8 +104,8 @@ model Critic {
   server    Server @relation(fields: [server_id], references: [id], onDelete: Cascade)
   server_id Int
 
-  user    User @relation(fields: [user_id], references: [id])
-  user_id Int
+  user    User? @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  user_id Int?
 
   reports Report[]
 
@@ -115,8 +121,8 @@ model Mod_Action {
   type       String   @db.VarChar(30)
   created_at DateTime @default(now())
 
-  user    User @relation(fields: [user_id], references: [id])
-  user_id Int
+  user    User? @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  user_id Int?
 
   @@map("mod_action")
 }
@@ -133,7 +139,7 @@ model Tag {
 }
 
 model Report {
-  user        User     @relation(fields: [user_uuid], references: [uuid])
+  user        User     @relation(fields: [user_uuid], references: [uuid], onDelete: Cascade)
   user_uuid   String   @map("user_uuid") @db.Uuid
   critic      Critic   @relation(fields: [critic_uuid], references: [uuid], onDelete: Cascade)
   critic_uuid String   @map("critic_uuid") @db.Uuid
