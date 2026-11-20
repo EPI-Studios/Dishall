@@ -1,7 +1,25 @@
-import { redirect } from "next/navigation";
-
+import { connection, NextResponse } from "next/server";
+import { buildDiscordAuthorizeRedirect } from "@/lib/auth/oauth";
+ 
 export async function GET() {
-  const url = "https://discord.com/oauth2/authorize?client_id=1569362762055024641&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fapi%2Fauth%2Fdiscord%2Fcallback&scope=identify"
-
-  redirect(url);
+  // Avec cacheComponents, une route qui ne lit pas la requête peut être pré-rendue au build :
+  // le state aléatoire serait alors figé et identique pour tout le monde.
+  // connection() force l'exécution à chaque requête.
+  await connection();
+ 
+  const { DISCORD_REDIRECT_URI } = process.env;
+ 
+  const response = DISCORD_REDIRECT_URI
+    ? buildDiscordAuthorizeRedirect("login", {
+        redirectUri: DISCORD_REDIRECT_URI,
+        scope: "identify",
+      })
+    : null;
+ 
+  if (!response) {
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 }); // Internal server error
+  }
+ 
+  return response;
 }
+ 

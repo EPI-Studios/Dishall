@@ -1,22 +1,37 @@
+// À placer dans : app/api/auth/discord/callback/route.ts (renomme le fichier en route.ts)
 import jwt from "jsonwebtoken";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
-import { redirect } from "next/navigation";
+import { clearStateCookie, isValidState } from "@/lib/auth/oauth";
+
+const discordTokenSchema = z.object({
+  access_token: z.string(),
+});
 
 const discordUserSchema = z.object({
   id: z.string(),
+  username: z.string(),
   avatar: z.string().nullable(),
-  global_name: z.string(),
+  global_name: z.string().nullable(), // null si l'utilisateur n'a pas de nom d'affichage
 });
 
-export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
-  const code = searchParams.get("code");
+// Réponse d'erreur qui supprime aussi le state : il est à usage unique
+function fail(error: string, status: number) {
+  const response = NextResponse.json({ error }, { status });
+  clearStateCookie(response, "login");
+  return response;
+}
 
-  if (!code) {
-    console.error("code non trouvé")
-    redirect("/")
+export async function GET(request: NextRequest) {
+  const code = request.nextUrl.searchParams.get("code");
+
+  // Code absent (l'utilisateur a refusé l'autorisation sur Discord)
+  // ou state invalide (protection contre le login CSRF) : retour à l'accueil
+  if (!code || !isValidState(request, "login")) {
+    const response = NextResponse.redirect(new URL("/", request.url));
+    clearStateCookie(response, "login");
+    return response;
   }
 
   const {
@@ -35,89 +50,108 @@ export async function GET(request: NextRequest) {
     !JWT_SECRET ||
     !CLIENT_REDIRECT_URL
   ) {
-    return NextResponse.json(
-      { error: "Erreur serveur" },
-      { status: 500 }, // Internal server error
-    );
+    return fail("Erreur serveur", 500); // Internal server error
   }
 
   // On envoie le code pour recevoir un access token
-  const tokenResponse = await fetch("https://discord.com/api/oauth2/token", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded", // Pour envoyer des données de formulaire sous forme de chaîne de caractères composée de paires clé-valeur
-    },
-    body: new URLSearchParams({
-      client_id: DISCORD_CLIENT_ID,
-      client_secret: DISCORD_CLIENT_SECRET,
-      grant_type: "authorization_code",
-      code,
-      redirect_uri: DISCORD_REDIRECT_URI,
-    }),
-  });
+  let accessToken: string;
 
-  if (!tokenResponse.ok) {
-    return NextResponse.json(
-      { error: "Erreur" },
-      { status: 400 }, // Bad Request
-    );
+  try {
+    const tokenResponse = await fetch("https://discord.com/api/oauth2/token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded", // Données de formulaire : paires clé=valeur
+      },
+      body: new URLSearchParams({
+        client_id: DISCORD_CLIENT_ID,
+        client_secret: DISCORD_CLIENT_SECRET,
+        grant_type: "authorization_code",
+        code,
+        redirect_uri: DISCORD_REDIRECT_URI,
+      }),
+    });
+
+    if (!tokenResponse.ok) {
+      return fail("Code refusé par Discord", 400); // Bad Request
+    }
+
+    const tokenData = discordTokenSchema.safeParse(await tokenResponse.json());
+    if (!tokenData.success) {
+      return fail("Réponse Discord inattendue", 502); // Bad Gateway
+    }
+
+    accessToken = tokenData.data.access_token;
+  } catch {
+    return fail("Discord est injoignable", 502); // Bad Gateway
   }
-
-  const { access_token } = await tokenResponse.json();
 
   // Récupération du profil Discord
-  const userResponse = await fetch("https://discord.com/api/users/@me", {
-    headers: { Authorization: `Bearer ${access_token}` },
-  });
+  let discordUser: z.infer<typeof discordUserSchema>;
 
-  if (!userResponse.ok) {
-    return NextResponse.json(
-      { error: "Erreur lors de l'envoi du token" },
-      { status: 500 }, // Internal server error
-    );
+  try {
+    const userResponse = await fetch("https://discord.com/api/users/@me", {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    if (!userResponse.ok) {
+      return fail("Impossible de récupérer le profil Discord", 502); // Bad Gateway
+    }
+
+    const parsed = discordUserSchema.safeParse(await userResponse.json());
+    if (!parsed.success) {
+      return fail("Profil Discord invalide", 502); // Bad Gateway
+    }
+
+    discordUser = parsed.data;
+  } catch {
+    return fail("Discord est injoignable", 502); // Bad Gateway
   }
 
-  const parsed = discordUserSchema.safeParse(await userResponse.json());
-  if (!parsed.success) {
-    return NextResponse.json(
-      { error: "Profil Discord invalide" },
-      { status: 502 }, // Bad gateway
-    );
-  }
-
-  const { id, global_name, avatar: discordAvatar } = parsed.data;
+  const { id, username, global_name, avatar: discordAvatar } = discordUser;
 
   const avatar = discordAvatar
-  ? `https://cdn.discordapp.com/avatars/${id}/${discordAvatar}.png`
-  : "https://cdn.discordapp.com/embed/avatars/0.png"; // avatar par défaut
+    ? `https://cdn.discordapp.com/avatars/${id}/${discordAvatar}.png`
+    : "https://cdn.discordapp.com/embed/avatars/0.png"; // avatar par défaut
 
-  // On crée l'utilisateur si il n'est pas dans la base de donnée
+  // On crée l'utilisateur s'il n'est pas dans la base de données.
   // upsert sert à créer ou modifier si l'user existe déjà en base
-  const user = await prisma.user.upsert({
-    where: { discord_id: id },
-    update: {
-      avatar: avatar,
-    },
-    create: {
-      discord_id: id,
-      pseudo: global_name,
-      avatar: avatar,
-    },
-  });
+  let user;
 
+  try {
+    user = await prisma.user.upsert({
+      where: { discord_id: id },
+      update: {
+        avatar: avatar,
+      },
+      create: {
+        discord_id: id,
+        pseudo: global_name ?? username, // repli si pas de nom d'affichage
+        avatar: avatar,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    return fail("Erreur serveur", 500); // Internal server error
+  }
+
+  // Le rôle reste dans le token : proxy.ts s'en sert pour rediriger /admin et /moderation.
+  // Les routes API, elles, relisent toujours le rôle en base.
   const token = jwt.sign({ sub: id, role: user.role }, JWT_SECRET, {
+    algorithm: "HS256",
     expiresIn: "7d",
   });
 
   const response = NextResponse.redirect(new URL(CLIENT_REDIRECT_URL));
 
   response.cookies.set("token", token, {
-    httpOnly: true, // Bloque l'accès au token via JS => protection XSS(cross-site scripting)
+    httpOnly: true, // Bloque l'accès au token via JS => limite l'impact d'une faille XSS
     secure: process.env.NODE_ENV === "production", // Force la transmission via HTTPS uniquement
-    sameSite: "lax", // Contre l'usupation d'identité (Cross-Site Request Forgery)
+    sameSite: "lax", // Le cookie n'est pas envoyé sur les requêtes POST venues d'un autre site
     maxAge: 60 * 60 * 24 * 7, // 604 800s = 7 jours
     path: "/", // le cookie est envoyé sur toutes les routes
   });
+
+  clearStateCookie(response, "login");
 
   return response;
 }

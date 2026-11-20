@@ -57,13 +57,19 @@ export default function ServersSection() {
     const link = formData.get("link") as string;
 
     try {
-      await handleUpdateServer(
+      const updated = await handleUpdateServer(
         serverUpdate.uuid,
         name,
         description,
         country,
         category,
         link,
+      );
+
+      setServers((prev) =>
+        prev.map((server) =>
+          server.uuid === updated.uuid ? { ...server, ...updated } : server,
+        ),
       );
       setServerUpdate(null);
     } catch (error) {
@@ -76,63 +82,63 @@ export default function ServersSection() {
   return (
     <>
       {servers.map((server: ServerType) => (
-          <article key={server.uuid} className="relative mb-8 rounded-xl border-2 border-pink bg-dark p-4 shadow-[0_0_10px_var(--color-pink)]">
-            <Link
-              href={`/serveurs/${server.uuid}`}
-              className="block h-full"
-            >
-              <div className="grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-3 lg:grid-cols-[auto_1fr_auto_auto] lg:gap-x-6">
-                <Image
-                  src={discordServerIcon(server.guild_id, server.icon)}
-                  width={130}
-                  height={130}
-                  alt={`Logo du serveur ${server.name}`}
-                  className="size-20 shrink-0 rounded-xl object-cover shadow-[0_0_10px_var(--color-pink)] lg:size-32"
-                />
+        <article
+          key={server.uuid}
+          className="relative mb-8 rounded-xl border-2 border-pink bg-dark p-4 shadow-[0_0_10px_var(--color-pink)]"
+        >
+          <Link href={`/serveurs/${server.uuid}`} className="block h-full">
+            <div className="grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-3 lg:grid-cols-[auto_1fr_auto_auto] lg:gap-x-6">
+              <Image
+                src={discordServerIcon(server.guild_id, server.icon)}
+                width={130}
+                height={130}
+                alt={`Logo du serveur ${server.name}`}
+                className="size-20 shrink-0 rounded-xl object-cover shadow-[0_0_10px_var(--color-pink)] lg:size-32"
+              />
 
-                <div className="flex min-w-0 flex-col gap-3">
-                  <h3
-                    className="min-w-0 text-xl line-clamp-2 text-center font-bold lg:text-3xl"
-                    title={server.name}
-                  >
-                    {server.name}
-                  </h3>
-                </div>
+              <div className="flex min-w-0 flex-col gap-3">
+                <h3
+                  className="min-w-0 text-xl line-clamp-2 text-center font-bold lg:text-3xl"
+                  title={server.name}
+                >
+                  {server.name}
+                </h3>
               </div>
-            </Link>
-
-            <div className="flex gap-8 justify-center">
-              <button
-                aria-label="Modifier le serveur"
-                className="flex size-10 items-center justify-center rounded-full bg-pink lg:absolute lg:-right-5 lg:top-6"
-                onClick={() => {
-                  setFormError(null);
-                  setServerUpdate(server);
-                }}
-              >
-                <Icon
-                  icon="radix-icons:pencil-1"
-                  width="30"
-                  height="30"
-                  color="var(--color-white)"
-                  className="cursor-pointer"
-                />
-              </button>
-              <button
-                aria-label="Supprimer le serveur"
-                className="flex size-10 items-center justify-center rounded-full bg-pink lg:absolute lg:-right-5 lg:bottom-6"
-                onClick={() => setServerToDelete(server)}
-              >
-                <Icon
-                  icon="radix-icons:trash"
-                  width="30"
-                  height="30"
-                  color="var(--color-white)"
-                  className="cursor-pointer"
-                />
-              </button>
             </div>
-          </article>
+          </Link>
+
+          <div className="flex gap-8 justify-center">
+            <button
+              aria-label="Modifier le serveur"
+              className="flex size-10 items-center justify-center rounded-full bg-pink lg:absolute lg:-right-5 lg:top-6"
+              onClick={() => {
+                setFormError(null);
+                setServerUpdate(server);
+              }}
+            >
+              <Icon
+                icon="radix-icons:pencil-1"
+                width="30"
+                height="30"
+                color="var(--color-white)"
+                className="cursor-pointer"
+              />
+            </button>
+            <button
+              aria-label="Supprimer le serveur"
+              className="flex size-10 items-center justify-center rounded-full bg-pink lg:absolute lg:-right-5 lg:bottom-6"
+              onClick={() => setServerToDelete(server)}
+            >
+              <Icon
+                icon="radix-icons:trash"
+                width="30"
+                height="30"
+                color="var(--color-white)"
+                className="cursor-pointer"
+              />
+            </button>
+          </div>
+        </article>
       ))}
 
       {serverToDelete && (
@@ -140,9 +146,9 @@ export default function ServersSection() {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-6"
           onClick={() => setServerToDelete(null)}
         >
-          <div 
+          <div
             className="w-full max-w-md rounded-xl border-2 border-pink bg-dark p-6 text-center shadow-[0_0_10px_var(--color-pink)]"
-            onClick={(e) => e.stopPropagation()} 
+            onClick={(e) => e.stopPropagation()}
           >
             <p className="mb-6 text-lg">
               Supprimer le serveur{" "}
@@ -200,7 +206,9 @@ export default function ServersSection() {
                 name="category"
                 className="border text-center border-pink rounded-xl p-2 mb-4"
               >
-                <option value={serverUpdate.category}>{serverUpdate.category}</option>
+                <option value={serverUpdate.category}>
+                  {serverUpdate.category}
+                </option>
                 {categories.map((category) => (
                   <option key={category.id} value={category.slug}>
                     {category.name}
@@ -213,7 +221,9 @@ export default function ServersSection() {
                 name="country"
                 className="border text-center border-pink rounded-xl p-2 mb-4"
               >
-                <option value={serverUpdate.country}>{serverUpdate.country}</option>
+                <option value={serverUpdate.country}>
+                  {serverUpdate.country}
+                </option>
                 <option value="FR">France</option>
                 <option value="US">Etats-Unis</option>
                 <option value="UK">Royaume-Uni</option>

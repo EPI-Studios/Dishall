@@ -1,12 +1,52 @@
+// À placer dans : app/api/admin/servers/[uuid]/route.ts (renomme le fichier en route.ts)
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth/auth.server";
-import { z } from "zod";
 import { Prisma } from "@/generated/prisma/client";
+import { z } from "zod";
 
 const statusSchema = z.object({
     status: z.enum(["approved", "pending", "rejected"]),
 });
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ uuid: string }> },
+) {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    return NextResponse.json({ error: "Non authentifié" }, { status: 401 }); // Unauthorized
+  }
+
+  const admin = await prisma.user.findUnique({
+    where: { discord_id: currentUser.sub },
+    select: { role: true },
+  });
+
+  if (admin?.role !== "admin") {
+    return NextResponse.json({ error: "Interdit" }, { status: 403 }); // Forbidden
+  }
+
+  const { uuid } = await params;
+
+  try {
+    await prisma.server.delete({ where: { uuid } });
+    return new Response(null, { status: 204 }); // No content
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2025"
+    ) {
+      return NextResponse.json(
+        { error: "Serveur introuvable" },
+        { status: 404 },
+      ); // Not found
+    }
+    console.error(error)
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 }); // Server error
+  }
+};
+
 
 export async function PATCH(
   request: NextRequest,
@@ -52,7 +92,7 @@ export async function PATCH(
       error instanceof Prisma.PrismaClientKnownRequestError &&
       error.code === "P2025"
     ) {
-      return NextResponse.json({ error: "Commentaire introuvable" }, { status: 404 }); // Not Found
+      return NextResponse.json({ error: "Serveur introuvable" }, { status: 404 }); // Not Found
     }
     console.error(error);
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });

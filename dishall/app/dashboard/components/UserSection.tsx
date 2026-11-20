@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import Image from "next/image";
 import { Icon } from "@iconify/react";
@@ -7,23 +7,27 @@ import { useState } from "react";
 import { handleUpdateUser, useUser } from "@/lib/users/users.client";
 
 export default function UserSection() {
-  
-  const { user, loading } = useUser();
+  const { user, loading, setUser } = useUser();
   const [userUpdate, setUserUpdate] = useState<UserType | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const handleAction = async (formData: FormData) => {
     if (!userUpdate) return;
+    setFormError(null);
 
     const pseudo = formData.get("pseudo") as string;
 
     try {
-      await handleUpdateUser(userUpdate.discord_id, pseudo, userUpdate.avatar);
+      const updated = await handleUpdateUser(userUpdate.discord_id, pseudo);
 
+      setUser((prev) => (prev ? { ...prev, ...updated } : prev));
       setUserUpdate(null);
     } catch (error) {
-      console.error(error);
+      setFormError(
+        error instanceof Error ? error.message : "Une erreur est survenue",
+      );
     }
-  }; 
+  };
 
   if (loading) {
     return <p>Chargement du profil...</p>;
@@ -52,7 +56,10 @@ export default function UserSection() {
           <button
             aria-label="Modifier le profil"
             className="flex size-10 items-center justify-center rounded-full bg-pink lg:absolute lg:-right-5"
-            onClick={() => setUserUpdate(user)}
+            onClick={() => {
+              setFormError(null);
+              setUserUpdate(user);
+            }}
           >
             <Icon
               icon="radix-icons:pencil-1"
@@ -84,6 +91,12 @@ export default function UserSection() {
               />
             </div>
 
+            {formError && (
+              <p role="alert" className="mb-4 text-red-500">
+                {formError}
+              </p>
+            )}
+
             <div className="flex justify-center gap-4">
               <button
                 type="submit"
@@ -94,7 +107,10 @@ export default function UserSection() {
               <button
                 type="button"
                 className="rounded-xl border-2 border-pink px-4 py-2 text-[var(--color-white)]"
-                onClick={() => setUserUpdate(null)}
+                onClick={() => {
+                  setFormError(null);
+                  setUserUpdate(null);
+                }}
               >
                 Annuler
               </button>

@@ -2,6 +2,15 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import { clearStateCookie, isValidState } from "@/lib/auth/oauth";
+
+const discordTokenSchema = z.object({
+  access_token: z.string(),
+});
+
+const discordMeSchema = z.object({
+  id: z.string(),
+});
 
 const discordGuildSchema = z.object({
   id: z.string(),
@@ -12,13 +21,21 @@ const discordGuildSchema = z.object({
   approximate_member_count: z.number().optional(),
 });
 
-export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
-  const code = searchParams.get("code");
+// Réponse d'erreur qui supprime aussi le state : il est à usage unique
+function fail(error: string, status: number) {
+  const response = NextResponse.json({ error }, { status });
+  clearStateCookie(response, "guild");
+  return response;
+}
 
-  if (!code) {
-    console.error("code non trouvé")
-    return NextResponse.redirect(new URL("/", request.url))
+export async function GET(request: NextRequest) {
+  const code = request.nextUrl.searchParams.get("code");
+
+  // Code absent (autorisation refusée sur Discord) ou state invalide (protection CSRF)
+  if (!code || !isValidState(request, "guild")) {
+    const response = NextResponse.redirect(new URL("/dashboard", request.url));
+    clearStateCookie(response, "guild");
+    return response;
   }
 
   const {
@@ -37,111 +54,146 @@ export async function GET(request: NextRequest) {
     !JWT_SECRET ||
     !CLIENT_REDIRECT_URL
   ) {
-    return NextResponse.json(
-      { error: "Erreur serveur" },
-      { status: 500 }, // Internal server error
-    );
+    return fail("Erreur serveur", 500); // Internal server error
   }
 
-  // on récupère le user avec son cookie
+  // On récupère l'utilisateur connecté grâce à son cookie de session
   const sessionToken = request.cookies.get("token")?.value;
-    
+
   if (!sessionToken) {
-    return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+    return fail("Non authentifié", 401); // Unauthorized
   }
 
-  const payload = jwt.verify(sessionToken, JWT_SECRET) as JwtPayload;
+  let discordId: string;
 
-  const discordId = payload.sub;
- 
-  if (!discordId) {
-    return NextResponse.redirect(("/"));
+  try {
+    const payload = jwt.verify(sessionToken, JWT_SECRET, {
+      algorithms: ["HS256"],
+    }) as JwtPayload;
+
+    if (!payload.sub) throw new Error("sub manquant");
+    discordId = payload.sub;
+  } catch {
+    return fail("Session invalide ou expirée", 401); // Unauthorized
   }
-    
-  
+
   // On envoie le code pour recevoir un access token
-  const tokenResponse = await fetch("https://discord.com/api/oauth2/token", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded", // Pour envoyer des données de formulaire sous forme de chaîne de caractères composée de paires clé-valeur
-    },
-    body: new URLSearchParams({
-      client_id: DISCORD_CLIENT_ID,
-      client_secret: DISCORD_CLIENT_SECRET,
-      grant_type: "authorization_code",
-      code,
-      redirect_uri: DISCORD_GUILD_REDIRECT_URI,
-    }),
-  });
+  let accessToken: string;
 
-  if (!tokenResponse.ok) {
-    return NextResponse.json(
-      { error: "Erreur" },
-      { status: 400 }, // Bad Request
-    );
+  try {
+    const tokenResponse = await fetch("https://discord.com/api/oauth2/token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded", // Données de formulaire : paires clé=valeur
+      },
+      body: new URLSearchParams({
+        client_id: DISCORD_CLIENT_ID,
+        client_secret: DISCORD_CLIENT_SECRET,
+        grant_type: "authorization_code",
+        code,
+        redirect_uri: DISCORD_GUILD_REDIRECT_URI,
+      }),
+    });
+
+    if (!tokenResponse.ok) {
+      return fail("Code refusé par Discord", 400); // Bad Request
+    }
+
+    const tokenData = discordTokenSchema.safeParse(await tokenResponse.json());
+    if (!tokenData.success) {
+      return fail("Réponse Discord inattendue", 502); // Bad Gateway
+    }
+
+    accessToken = tokenData.data.access_token;
+  } catch {
+    return fail("Discord est injoignable", 502); // Bad Gateway
   }
 
-  const { access_token } = await tokenResponse.json();
+  // Profil (pour vérifier l'identité) et serveurs de l'utilisateur, en parallèle
+  let me: z.infer<typeof discordMeSchema>;
+  let guilds: z.infer<typeof discordGuildSchema>[];
 
-  // Récupération des guilds de l'user
-  const guildsResponse = await fetch("https://discord.com/api/users/@me/guilds?with_counts=true", {
-    headers: { Authorization: `Bearer ${access_token}` },
-  });
+  try {
+    const headers = { Authorization: `Bearer ${accessToken}` };
 
-  if (!guildsResponse.ok) {
-    return NextResponse.json(
-      { error: "Erreur lors de l'envoi du token" },
-      { status: 500 }, // Internal server error
-    );
+    const [meResponse, guildsResponse] = await Promise.all([
+      fetch("https://discord.com/api/users/@me", { headers }),
+      fetch("https://discord.com/api/users/@me/guilds?with_counts=true", { headers }),
+    ]);
+
+    if (!meResponse.ok || !guildsResponse.ok) {
+      return fail("Impossible de récupérer les données Discord", 502); // Bad Gateway
+    }
+
+    const parsedMe = discordMeSchema.safeParse(await meResponse.json());
+    const parsedGuilds = z
+      .array(discordGuildSchema)
+      .safeParse(await guildsResponse.json());
+
+    if (!parsedMe.success || !parsedGuilds.success) {
+      return fail("Réponse Discord inattendue", 502); // Bad Gateway
+    }
+
+    me = parsedMe.data;
+    guilds = parsedGuilds.data;
+  } catch {
+    return fail("Discord est injoignable", 502); // Bad Gateway
   }
 
-  const parsed = z.array(discordGuildSchema).safeParse(await guildsResponse.json());
-
-  if (!parsed.success) {
-    return NextResponse.json({ error: "Réponse Discord inattendue" }, { status: 502 }); // Bad Gateway
-  };
-
-  const guilds = parsed.data;
+  // Discord permet de changer de compte sur l'écran d'autorisation :
+  // on refuse si ce n'est pas le compte connecté à Dishall.
+  if (me.id !== discordId) {
+    return fail(
+      "Le compte Discord autorisé ne correspond pas à ton compte connecté",
+      403, // Forbidden
+    );
+  }
 
   const ownerGuilds = guilds.filter((guild) => guild.owner === true);
 
-  // On crée le ou les serveurs si il n'est pas dans la base de donnée
-  // transaction permet de regrouper plusieurs serveurs pour les ajouter, soit tout est crée ou rien n'est crée
-  await prisma.$transaction(
-    ownerGuilds.map((guild) => 
-      prisma.server.upsert({
-        where: { guild_id: guild.id },
-        create: {
-          guild_id: guild.id,
-          name: guild.name,
-          description: "",
-          link: "",
-          status: "approved",
-          banner: "",
-          category: "",
-          country: "FR", // valeur par défaut
-          user: { connect: { discord_id: discordId } },
-          icon: guild.icon ?? "https://cdn.discordapp.com/embed/avatars/0.png",
-          serverStats: {
-            create: { users_nb: guild.approximate_member_count ?? 0 },
+  // On crée le ou les serveurs s'ils ne sont pas dans la base de données.
+  // $transaction regroupe les upserts : soit tout est créé, soit rien.
+  try {
+    await prisma.$transaction(
+      ownerGuilds.map((guild) =>
+        prisma.server.upsert({
+          where: { guild_id: guild.id },
+          create: {
+            guild_id: guild.id,
+            name: guild.name,
+            description: "",
+            link: "",
+            status: "approved",
+            banner: "",
+            category: "",
+            country: "FR", // valeur par défaut
+            user: { connect: { discord_id: discordId } },
+            icon: guild.icon ?? "https://cdn.discordapp.com/embed/avatars/0.png",
+            serverStats: {
+              create: { users_nb: guild.approximate_member_count ?? 0 },
+            },
           },
-        },
-        update: {
-          name: guild.name,
-          icon: guild.icon ?? "",
+          update: {
+            name: guild.name,
+            icon: guild.icon ?? "",
+            // upsert (et non update) : la ligne de stats peut ne pas exister encore
+            serverStats: {
+              upsert: {
+                create: { users_nb: guild.approximate_member_count ?? 0 },
+                update: { users_nb: guild.approximate_member_count ?? 0 },
+              },
+            },
+          },
+        }),
+      ),
+    );
+  } catch (error) {
+    console.error(error);
+    return fail("Erreur serveur", 500); // Internal server error
+  }
 
-          serverStats: {
-            update: {
-              users_nb: guild.approximate_member_count ?? 0
-            }
-            
-          }
-        },
-      })
-  ));
+  const response = NextResponse.redirect(new URL("/dashboard", CLIENT_REDIRECT_URL));
+  clearStateCookie(response, "guild");
 
-  const redirectUrl = new URL("/dashboard", CLIENT_REDIRECT_URL);
-
-  return NextResponse.redirect(redirectUrl);
+  return response;
 }
-

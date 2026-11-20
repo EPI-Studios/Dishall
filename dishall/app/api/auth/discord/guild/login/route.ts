@@ -1,7 +1,24 @@
-import { redirect } from "next/navigation";
+import { connection, NextResponse } from "next/server";
+import { buildDiscordAuthorizeRedirect } from "@/lib/auth/oauth";
 
 export async function GET() {
-  const url = "https://discord.com/oauth2/authorize?client_id=1569362762055024641&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fapi%2Fauth%2Fdiscord%2Fguild%2Fcallback&scope=guilds+guilds.joinhttps://discord.com/oauth2/authorize?client_id=1569362762055024641&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fapi%2Fauth%2Fdiscord%2Fguild%2Fcallback&scope=guilds+guilds.join"
+  // Force l'exécution à chaque requête : sans ça, le state aléatoire pourrait être figé au build
+  await connection();
 
-  redirect(url);
+  const { DISCORD_GUILD_REDIRECT_URI } = process.env;
+
+  // "identify" sert à vérifier au retour que le compte Discord qui autorise est bien celui connecté.
+  // "guilds.join" est retiré : rien ne l'utilise (moindre privilège).
+  const response = DISCORD_GUILD_REDIRECT_URI
+    ? buildDiscordAuthorizeRedirect("guild", {
+        redirectUri: DISCORD_GUILD_REDIRECT_URI,
+        scope: "identify guilds",
+      })
+    : null;
+
+  if (!response) {
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 }); // Internal server error
+  }
+
+  return response;
 }

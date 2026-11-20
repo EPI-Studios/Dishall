@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import discordServerIcon from "@/util/discordImage";
 import ReviewSummary from "@/app/components/ReviewSummary";
 import LatestReviews from "@/app/components/LatestReviews";
 import Header from "@/app/components/Header";
@@ -7,10 +8,9 @@ import Footer from "@/app/components/Footer";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { Icon } from "@iconify/react";
-import { getServerByUuid } from "@/lib/servers/servers.server";
+import { getServerByUuid, isServerOwner } from "@/lib/servers/servers.server";
 import { getReviewsByServerUuid } from "@/lib/reviews/reviews.server";
 import { Suspense } from "react";
-import discordServerIcon from "@/util/discordImage";
 
 type Props = { params: Promise<{ uuid: string }> };
 
@@ -54,9 +54,14 @@ export default async function ServerPage({ params }: Props) {
 async function ServerContent({ params }: Props) {
   const { uuid } = await params;
   const server = await getServerByUuid(uuid);
-  const reviews = await getReviewsByServerUuid(uuid);
 
   if (!server) notFound();
+
+  const [reviews, isOwner] = await Promise.all([
+    getReviewsByServerUuid(uuid),
+    isServerOwner(uuid),
+  ])
+
   return (
     <>
       {/* Bannière du serveur */}
@@ -157,7 +162,7 @@ async function ServerContent({ params }: Props) {
 
       {/* Avis */}
 
-      <ReviewSummary reviews={reviews} />
+      <ReviewSummary reviews={reviews} isOwner={isOwner} serverUuid={server.uuid}/>
       <LatestReviews reviews={reviews} />
     </>
   );

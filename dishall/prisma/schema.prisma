@@ -109,6 +109,7 @@ model Critic {
 
   reports Report[]
 
+  @@unique([server_id, user_id])
   @@map("critic")
 }
 

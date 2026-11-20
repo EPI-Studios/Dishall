@@ -54,13 +54,24 @@ export async function getAllServersForAdmin(page = 1) {
         guild_id: true,
         icon: true,
         serverStats: { select: { users_nb: true, server_bump: true, last_bump_at: true } },
-        score: true
+        score: { select: { total_score: true } },
       },
     }),
     prisma.server.count(),
   ]);
 
   return { servers, totalPages: Math.max(1, Math.ceil(total / PAGE_SIZE)) };
+};
+
+export async function isServerOwner(serverUuid: string): Promise<boolean> {
+  const current = await getCurrentUser();
+  if (!current) return false;
+
+  const count = await prisma.server.count({
+    where: { uuid: serverUuid, user: { discord_id: current.sub } },
+  });
+
+  return count > 0;
 }
 
 

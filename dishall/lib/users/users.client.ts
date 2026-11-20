@@ -24,40 +24,37 @@ export function useUser() {
     router.refresh();
   }
 
-  return { user, loading, logout };
+  return { user, setUser, loading, logout };
 }
 
-export async function handleUpdateUser(discord_id: string, pseudo: string, avatar: string) {
-  const updatedUser = {
-    pseudo,
-    avatar
-  };
+export async function handleUpdateUser(discord_id: string, pseudo: string) {
+
+   let response: Response;
 
   try {
-    const response = await fetch(`/api/users/${discord_id}`, 
-      {
-        method: "PATCH",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(updatedUser),
-      }, 
-    );
-    
-    if (!response.ok) {
-      console.error("Echec de la modification");
-    }
-  } catch (error) {
-    console.error(error);
+    response = await fetch(`/api/users/${discord_id}`, {
+      method: "PATCH",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pseudo }),
+    });
+  } catch {
+    throw new Error("Impossible de contacter le serveur");
   }
+
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    throw new Error(body?.error ?? "La modification a échoué");
+  }
+
+  return response.json(); 
 };
 
 export async function handleDeleteUser(discord_id: string) {
   let response: Response;
 
   try {
-    response = await fetch(`/api/users/${discord_id}`, {
+    response = await fetch(`/api/admin/users/${discord_id}`, {
       method: "DELETE",
       credentials: "include",
     });
@@ -77,7 +74,7 @@ export async function handleUpdateUserRole(discord_id: string, role: RoleType) {
   let response: Response;
 
   try {
-    response = await fetch(`/api/users/${discord_id}/role`, {
+    response = await fetch(`/api/admin/users/${discord_id}/`, {
       method: "PATCH",
       credentials: "include",
       headers: { "Content-Type": "application/json" },

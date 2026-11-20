@@ -6,7 +6,7 @@ import discordServerIcon from "@/util/discordImage";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Icon } from "@iconify/react";
-import { handleUpdateServerStatus } from "@/lib/servers/servers.client";
+import { handleAdminDeleteServer, handleUpdateServerStatus } from "@/lib/servers/servers.client";
 
 type ModerationServer = {
   uuid: string;
@@ -20,7 +20,7 @@ type ModerationServer = {
     users_nb: number;
   } | null;
   score: {
-    total_score: string;
+    total_score: number;
   } | null;
 };
 
@@ -68,7 +68,7 @@ export default function ServerCase({ server }: { server: ModerationServer }) {
     setDeleteError(null);
 
     try {
-      await handleDeleteUser(serverToDelete.uuid);
+      await handleAdminDeleteServer(serverToDelete.uuid);
       closeModal();
       router.refresh();
     } catch (error) {
