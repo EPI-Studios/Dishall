@@ -21,7 +21,7 @@ export default function ViewSelect({ current }: { current: View }) {
 
     startTransition(() => {
       setActive(view); // la pastille glisse tout de suite
-      router.push(`/admin?view=${view}`);
+      router.push(`/moderation?view=${view}`);
     });
   }
 
@@ -48,8 +48,10 @@ export default function ViewSelect({ current }: { current: View }) {
           role="tab"
           aria-selected={active === value}
           onClick={() => select(value)}
-          className={`relative z-10 px-4 py-2 transition-colors duration-300 text-sm lg:px-6 lg:text-xl ${
-            active === value ? "font-bold text-white" : "opacity-70 hover:opacity-100"
+          className={`relative z-10 whitespace-nowrap px-1 py-2.5 text-sm transition-colors duration-300 sm:px-4 lg:px-6 lg:text-xl ${
+            active === value
+              ? "font-bold text-dark"
+              : "opacity-80 hover:opacity-100"
           }`}
         >
           {label}

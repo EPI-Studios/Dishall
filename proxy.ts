@@ -22,14 +22,18 @@ export function proxy(request: NextRequest) {
       algorithms: ["HS256"],
     }) as TokenPayload;
 
-    // Route pour admins
-    if (pathname.startsWith("/admin") && payload.role !== "admin") {
+    // Route Administration pour admins et modérateur
+    if (
+      pathname.startsWith("/moderation") &&
+      payload.role !== "admin" &&
+      payload.role !== "moderator"
+    ) {
       return NextResponse.redirect(new URL("/", request.url));
     }
 
-    // Route pour modérateur et admins
+    // Route journal pour modérateur et admins
     if (
-      pathname.startsWith("/moderation") &&
+      pathname.startsWith("/journal") &&
       payload.role !== "admin" &&
       payload.role !== "moderator"
     ) {
@@ -46,5 +50,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/admin/:path*", "/moderation/:path*"],
+  matcher: ["/dashboard/:path*", "/moderation/:path*", "/journal/:path*"],
 };

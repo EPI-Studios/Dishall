@@ -3,9 +3,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/auth.server";
 import { Prisma } from "@/generated/prisma/client";
 import { z } from "zod";
+import {
+  logModAction,
+  reasonSchema,
+} from "@/lib/mod_actions/mod_action.server";
 
 const roleSchema = z.object({
   role: z.enum(["member", "moderator"]),
+  reason: reasonSchema,
 });
 
 export async function DELETE(
@@ -69,12 +74,11 @@ export async function DELETE(
     console.error(error);
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 }); // Server error
   }
-};
-
+}
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ discord_id: string }>},
+  { params }: { params: Promise<{ discord_id: string }> },
 ) {
   const currentUser = await getCurrentUser();
   if (!currentUser) {
@@ -83,14 +87,21 @@ export async function PATCH(
 
   const admin = await prisma.user.findUnique({
     where: { discord_id: currentUser.sub },
-    select: { role: true },
+    select: { uuid: true, role: true },
   });
 
-  if (admin?.role !== "admin") {
+  if (admin?.role !== "admin" && admin?.role !== "moderator") {
     return NextResponse.json({ error: "Interdit" }, { status: 403 }); // Forbidden
   }
 
-  const { discord_id }= await params;
+  const { discord_id } = await params;
+
+  if (discord_id === currentUser.sub) {
+    return NextResponse.json(
+      { error: "Tu ne peux pas modifier ton propre rôle" },
+      { status: 403 },
+    );
+  }
 
   let body: unknown;
   try {
@@ -99,10 +110,12 @@ export async function PATCH(
     return NextResponse.json({ error: "JSON invalide" }, { status: 400 }); // Bad Request
   }
 
-  const parsed = roleSchema.safeParse(body);  
+  const parsed = roleSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Rôle invalide" }, { status: 400 }); // Bad Request
+    return NextResponse.json({ error: "Données invalides" }, { status: 400 }); // Bad Request
   }
+
+  const { role, reason } = parsed.data;
 
   const target = await prisma.user.findUnique({
     where: { discord_id },
@@ -110,7 +123,10 @@ export async function PATCH(
   });
 
   if (!target) {
-    return NextResponse.json({ error: "Utilisateur introuvable" }, { status: 404 }); // Not Found
+    return NextResponse.json(
+      { error: "Utilisateur introuvable" },
+      { status: 404 },
+    ); // Not Found
   }
 
   if (target.role === "admin") {
@@ -121,13 +137,20 @@ export async function PATCH(
   }
 
   try {
-    const updatedUser = await prisma.user.update({
-      where: { discord_id },
-      data: { role: parsed.data.role },
-      select: { discord_id: true, pseudo: true, role: true}
-    });
-    return NextResponse.json(updatedUser)
-  } catch  {
+    const [updatedUser] = await prisma.$transaction([
+      prisma.user.update({ where: { discord_id }, data: { role } }),
+      logModAction({
+        moderatorUuid: admin.uuid,
+        action: "role_change",
+        type: "user",
+        target: discord_id,
+        reason: `${target.role} → ${role} : ${reason}`,
+      }),
+    ]);
+
+    return NextResponse.json(updatedUser, { status: 200 });
+  } catch (error) {
+    console.error(error);
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
   }
 }

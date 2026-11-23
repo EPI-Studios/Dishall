@@ -24,10 +24,6 @@ const ACTION_LABELS: Record<string, { emoji: string; label: string }> = {
   status_change: { emoji: "🔄", label: "Changement de statut" },
   role_change: { emoji: "👤", label: "Changement de rôle" },
   delete: { emoji: "🗑️", label: "Suppression" },
-  warn: { emoji: "⚠️", label: "Avertissement"},
-  hide: { emoji: "👀", label:"Caché"},
-  approve: { emoji: "✅", label: "Approuvé" },
-  reject: { emoji: "❌", label: "Rejeté" }
 };
 
 const TYPE_LABELS: Record<string, string> = {

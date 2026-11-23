@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import Pagination from "./Pagination";
 import ServerCase from "./ServerCase";
 
-export default async function ServersSection({ page }: { page: number }) {
+export default async function ServersSection({ page, canDelete }: { page: number, canDelete: boolean }) {
 
   const result = await getAllServersForAdmin(page);
 
@@ -11,13 +11,13 @@ export default async function ServersSection({ page }: { page: number }) {
 
   const { servers, totalPages } = result;
 
-  if (page > totalPages) redirect(`/admin?view=servers&page=${totalPages}`);
+  if (page > totalPages) redirect(`/moderation?view=servers&page=${totalPages}`);
 
   return (
     <>
       <div className="grid gap-8 lg:grid-cols-2">
         {servers.map((server) => (
-          <ServerCase key={server.uuid} server={server} />
+          <ServerCase key={server.uuid} server={server} canDelete={canDelete} />
         ))}
       </div>
 

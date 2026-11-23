@@ -3,12 +3,25 @@ import "server-only";
 
 import { getCurrentUser } from "../auth/auth.server";
 import { prisma } from "../prisma";
-
-const PAGE_SIZE = 10;
+import { z } from "zod";
 
 // Les colonnes uuid sont typées @db.Uuid : un identifiant mal formé ferait planter toute la page
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export const reasonSchema = z
+  .string()
+  .trim()
+  .min(5, "La raison doit faire au moins 5 caractères.")
+  .max(500, "La raison ne peut pas dépasser 500 caractères.");
+
+type ModActionInput = {
+  moderatorUuid: string;
+  action: "status_change" | "role_change" | "delete";
+  type: "server" | "review" | "user";
+  target: string;
+  reason: string;
+};
 
 export type TargetInfo =
   | { kind: "server"; uuid: string; name: string }
@@ -22,7 +35,7 @@ export type TargetInfo =
     }
   | { kind: "user"; pseudo: string };
 
-export async function getAllModAction(page = 1) {
+export async function getAllModAction() {
   const current = await getCurrentUser();
   if (!current) return null;
 
@@ -32,23 +45,18 @@ export async function getAllModAction(page = 1) {
   });
   if (user?.role !== "admin" && user?.role !== "moderator") return null;
 
-  const [actions, total] = await prisma.$transaction([
-    prisma.mod_Action.findMany({
-      orderBy: [{ created_at: "desc" }, { id: "desc" }],
-      skip: (page - 1) * PAGE_SIZE,
-      take: PAGE_SIZE,
-      select: {
-        uuid: true,
-        action: true,
-        type: true,
-        target: true,
-        reason: true,
-        created_at: true,
-        user: { select: { pseudo: true } },
-      },
-    }),
-    prisma.mod_Action.count(),
-  ]);
+  const actions = await prisma.mod_Action.findMany({
+    orderBy: [{ created_at: "desc" }, { id: "desc" }],
+    select: {
+      uuid: true,
+      action: true,
+      type: true,
+      target: true,
+      reason: true,
+      created_at: true,
+      user: { select: { pseudo: true } },
+    },
+  });
 
   // Une requête par type de cible pour toute la page (pas une requête par ligne)
   const targetsOfType = (type: string) =>
@@ -121,7 +129,24 @@ export async function getAllModAction(page = 1) {
     actions: actions.map((a) => ({
       ...a,
       targetInfo: resolveTarget(a.type, a.target),
-    })),
-    totalPages: Math.max(1, Math.ceil(total / PAGE_SIZE)),
+    }))
   };
+}
+
+export function logModAction({
+  moderatorUuid,
+  action,
+  type,
+  target,
+  reason,
+}: ModActionInput) {
+  return prisma.mod_Action.create({
+    data: {
+      action,
+      type,
+      target,
+      reason,
+      user: { connect: { uuid: moderatorUuid } },
+    },
+  });
 }

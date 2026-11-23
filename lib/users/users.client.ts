@@ -70,15 +70,15 @@ export async function handleDeleteUser(discord_id: string) {
   }
 };
 
-export async function handleUpdateUserRole(discord_id: string, role: RoleType) {
+export async function handleUpdateUserRole(discord_id: string, role: RoleType, reason : string) {
   let response: Response;
 
   try {
-    response = await fetch(`/api/admin/users/${discord_id}/`, {
+    response = await fetch(`/api/admin/users/${discord_id}`, {
       method: "PATCH",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ role }),
+      body: JSON.stringify({ role, reason }),
     });
   } catch {
     throw new Error("Impossible de contacter le serveur");

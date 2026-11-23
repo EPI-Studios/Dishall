@@ -16,7 +16,7 @@ async function ServersSection() {
   return (
     <div className="grid gap-4 lg:grid-cols-2">
       {lastestServers.map((server: ServerType) => (
-        <ServerCard key={server.id} server={server} />
+        <ServerCard key={server.uuid} server={server} />
       ))}
     </div>
   );

@@ -1,4 +1,3 @@
-// À placer dans : app/api/servers/[uuid]/route.ts (remplace le fichier existant)
 import { z } from "zod";
 import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";

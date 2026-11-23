@@ -20,15 +20,15 @@ export async function handleDeleteReview(uuid: string) {
   }
 };
 
-export async function handleUpdateReviewStatus(uuid: string, status: string) {
+export async function handleUpdateReviewStatus(uuid: string, status: string, reason: string) {
   let response: Response;
 
   try {
-    response = await fetch(`/api/admin/reviews/${uuid}/`, {
+    response = await fetch(`/api/admin/reviews/${uuid}`, {
       method: "PATCH",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
+      body: JSON.stringify({ status, reason }),
     });
   } catch {
     throw new Error("Impossible de contacter le serveur");

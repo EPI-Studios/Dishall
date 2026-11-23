@@ -16,7 +16,7 @@ export default function LatestReviews({ reviews }: { reviews: ReviewType[] }) {
       {latest.length > 0 ? (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           {latest.map((review) => (
-            <ReviewCard key={review.id} review={review} />
+            <ReviewCard key={review.uuid} review={review} />
           ))}
         </div>
       ) : (

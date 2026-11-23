@@ -7,7 +7,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export default function UserCase({ user }: { user: UserType }) {
+export default function UserCase({ user, canDelete }: { user: UserType, canDelete: boolean }) {
   const router = useRouter();
   const [userToDelete, setUserToDelete] = useState<UserType | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -53,14 +53,20 @@ export default function UserCase({ user }: { user: UserType }) {
       if (!userToUpdate) return;
   
       const role = formData.get("role") as RoleType;
+      const reason = String(formData.get("reason")).trim();
 
       if (role !== "member" && role !== "moderator") {
         setUpdateError("Choisis un rôle");
         return;
       }
+
+      if (reason.length < 5) {
+      setUpdateError("Indique une raison d'au moins 5 caractères.");
+      return;
+    }
   
       try {
-        await handleUpdateUserRole(userToUpdate.discord_id, role);
+        await handleUpdateUserRole(userToUpdate.discord_id, role, reason);
         setUserToUpdate(null);
         setUpdateError(null);
         router.refresh();
@@ -102,6 +108,7 @@ export default function UserCase({ user }: { user: UserType }) {
                   color="var(--color-white)"
                 />
               </button>
+              {canDelete && (
               <button
                 type="button"
                 aria-label={`Supprimer ${user.pseudo}`}
@@ -115,6 +122,7 @@ export default function UserCase({ user }: { user: UserType }) {
                   color="var(--color-white)"
                 />
               </button>
+              )}
             </div>
           )}
         </div>
@@ -181,6 +189,21 @@ export default function UserCase({ user }: { user: UserType }) {
                 <option value="member">Membre</option>
                 <option value="moderator">Modérateur</option>
               </select>
+            </div>
+
+            <div className="flex flex-col items-center justify-center mb-8">
+              <label htmlFor="reason" className="text-xl mb-4">
+                Raison
+              </label>
+              <textarea
+                name="reason"
+                rows={3}
+                required
+                minLength={5}
+                maxLength={500}
+                placeholder="Pourquoi ce changement ?"
+                className="w-full min-w-64 resize-none rounded-xl border border-pink bg-transparent p-2"
+              />
             </div>
 
             {updateError && (

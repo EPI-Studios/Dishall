@@ -6,7 +6,10 @@ import discordServerIcon from "@/util/discordImage";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Icon } from "@iconify/react";
-import { handleAdminDeleteServer, handleUpdateServerStatus } from "@/lib/servers/servers.client";
+import {
+  handleAdminDeleteServer,
+  handleUpdateServerStatus,
+} from "@/lib/servers/servers.client";
 
 type ModerationServer = {
   uuid: string;
@@ -24,7 +27,7 @@ type ModerationServer = {
   } | null;
 };
 
-export default function ServerCase({ server }: { server: ModerationServer }) {
+export default function ServerCase({ server, canDelete }: { server: ModerationServer, canDelete: boolean }) {
   const router = useRouter();
   const [serverToDelete, setServerToDelete] = useState<ModerationServer | null>(
     null,
@@ -84,6 +87,7 @@ export default function ServerCase({ server }: { server: ModerationServer }) {
     if (!serverToUpdate) return;
 
     const status = formData.get("status") as string;
+    const reason = String(formData.get("reason")).trim();
 
     if (
       status !== "rejected" &&
@@ -94,8 +98,13 @@ export default function ServerCase({ server }: { server: ModerationServer }) {
       return;
     }
 
+    if (reason.length < 5) {
+      setUpdateError("Indique une raison d'au moins 5 caractères.");
+      return;
+    }
+
     try {
-      await handleUpdateServerStatus(serverToUpdate.uuid, status);
+      await handleUpdateServerStatus(serverToUpdate.uuid, status, reason);
       setServerToUpdate(null);
       setUpdateError(null);
       router.refresh();
@@ -167,6 +176,7 @@ export default function ServerCase({ server }: { server: ModerationServer }) {
               color="var(--color-white)"
             />
           </button>
+          {canDelete && (
           <button
             type="button"
             aria-label={`Supprimer ${server.name}`}
@@ -180,6 +190,7 @@ export default function ServerCase({ server }: { server: ModerationServer }) {
               color="var(--color-white)"
             />
           </button>
+          )}
         </div>
       </article>
 
@@ -245,6 +256,21 @@ export default function ServerCase({ server }: { server: ModerationServer }) {
                 <option value="pending">En attente</option>
                 <option value="rejected">Rejeté</option>
               </select>
+            </div>
+
+            <div className="flex flex-col items-center justify-center mb-8">
+              <label htmlFor="reason" className="text-xl mb-4">
+                Raison
+              </label>
+              <textarea
+                name="reason"
+                rows={3}
+                required
+                minLength={5}
+                maxLength={500}
+                placeholder="Pourquoi ce changement ?"
+                className="w-full min-w-64 resize-none rounded-xl border border-pink bg-transparent p-2"
+              />
             </div>
 
             {updateError && (

@@ -70,7 +70,7 @@ export default function ServerSearchBar({
           <ul className="absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden rounded-xl border-2 border-pink bg-dark text-white shadow-[0_0_15px_var(--color-pink)]">
             {results.length > 0 ? (
               results.map((server) => (
-                <li key={server.id}>
+                <li key={server.uuid}>
                   <Link
                     href={`/serveurs/${server.uuid}`}
                     onClick={() => setQuery("")}

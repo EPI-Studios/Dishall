@@ -4,9 +4,11 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth/auth.server";
 import { Prisma } from "@/generated/prisma/client";
 import { z } from "zod";
+import { logModAction, reasonSchema } from "@/lib/mod_actions/mod_action.server";
 
 const statusSchema = z.object({
     status: z.enum(["approved", "pending", "rejected"]),
+    reason: reasonSchema,
 });
 
 export async function DELETE(
@@ -59,7 +61,7 @@ export async function PATCH(
 
   const me = await prisma.user.findUnique({
     where: { discord_id: currentUser.sub },
-    select: { role: true },
+    select: { uuid: true, role: true },
   });
   
   if (me?.role !== "admin" && me?.role !== "moderator") {
@@ -68,8 +70,11 @@ export async function PATCH(
 
   const { uuid } = await params;
 
-  let body: unknown;
+  if (!z.uuid().safeParse(uuid).success) {
+    return NextResponse.json({ error: "Serveur introuvable" }, { status: 404 });
+  }
 
+  let body: unknown;
   try {
     body = await request.json();
   } catch {
@@ -81,20 +86,39 @@ export async function PATCH(
     return NextResponse.json({ error: "Statut invalide" }, { status: 400 }); // Bad Request
   }
 
+  const { status, reason } = parsed.data;
+
+  const server = await prisma.server.findUnique({
+    where: { uuid },
+    select: { status: true },
+  });
+
+  if (!server) {
+    return NextResponse.json({ error: "Serveur introuvable" }, { status: 404 });
+  }
+
+  if (server.status === status) {
+    return NextResponse.json(
+      { error: "Le serveur a déjà ce statut" },
+      { status: 409 },
+    );
+  }
+
   try {
-    const updatedServer = await prisma.server.update({
-      where: { uuid },
-      data: { status: parsed.data.status },
-    });
-    return NextResponse.json(updatedServer)
-  } catch (error)  {
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === "P2025"
-    ) {
-      return NextResponse.json({ error: "Serveur introuvable" }, { status: 404 }); // Not Found
-    }
+    const [updatedServer] = await prisma.$transaction([
+      prisma.server.update({ where: { uuid }, data: { status } }),
+      logModAction({
+        moderatorUuid: me.uuid,
+        action: "status_change",
+        type: "server",
+        target: uuid,
+        reason: `${server.status} -> ${status} : ${reason}`,
+      }),
+    ]);
+
+    return NextResponse.json(updatedServer, { status: 200 });
+  } catch (error) {
     console.error(error);
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
   }
-};
+}

@@ -26,7 +26,7 @@ await prisma.$executeRawUnsafe(`
 // ---------- Users (10) : ids 1 à 10 ----------
 await prisma.user.createMany({
   data: [
-    { uuid: U(1), discord_id: "810000000000000001", pseudo: "Mathieu", avatar: "https://img.magnific.com/psd-gratuit/discord-logo-3d-icone-medias-sociaux-isole_47987-11941.jpg?semt=ais_hybrid&w=740&q=80", role: "admin" },
+    { uuid: "9e1949af-fd61-41d5-9ddd-18080cbbfd29", discord_id: "1474360956502016057", pseudo: "Mathieu Fréchet", avatar: "https://cdn.discordapp.com/avatars/1474360956502016057/a914b8afdb1c8f174b751b763c0e54b1.png", role: "admin" },
     { uuid: U(2), discord_id: "810000000000000002", pseudo: "LunaMod", avatar: "https://img.magnific.com/psd-gratuit/discord-logo-3d-icone-medias-sociaux-isole_47987-11941.jpg?semt=ais_hybrid&w=740&q=80", role: "moderator" },
     { uuid: U(3), discord_id: "810000000000000003", pseudo: "Kaiju_Mod", avatar: "https://img.magnific.com/psd-gratuit/discord-logo-3d-icone-medias-sociaux-isole_47987-11941.jpg?semt=ais_hybrid&w=740&q=80", role: "moderator" },
     { uuid: U(4), discord_id: "810000000000000004", pseudo: "NoctisBeats", avatar: "https://img.magnific.com/psd-gratuit/discord-logo-3d-icone-medias-sociaux-isole_47987-11941.jpg?semt=ais_hybrid&w=740&q=80", role: "member" },
@@ -109,16 +109,16 @@ await prisma.critic.createMany({
 // ---------- Mod actions (10) : par l'admin (1) et les modérateurs (2, 3) ----------
 await prisma.mod_Action.createMany({
   data: [
-    { uuid: M(1), action: "approve", reason: "Fiche complète et conforme.", target: S(1), type: "server", created_at: daysAgo(290), user_id: 1 },
-    { uuid: M(2), action: "approve", reason: "Fiche complète et conforme.", target: S(2), type: "server", created_at: daysAgo(200), user_id: 1 },
-    { uuid: M(3), action: "approve", reason: "Fiche complète et conforme.", target: S(3), type: "server", created_at: daysAgo(490), user_id: 2 },
-    { uuid: M(4), action: "approve", reason: "Fiche conforme aux règles.", target: S(4), type: "server", created_at: daysAgo(110), user_id: 2 },
-    { uuid: M(5), action: "approve", reason: "Fiche conforme aux règles.", target: S(5), type: "server", created_at: daysAgo(250), user_id: 3 },
-    { uuid: M(6), action: "reject", reason: "Contenu non conforme aux règles de la plateforme.", target: S(10), type: "server", created_at: daysAgo(25), user_id: 1 },
-    { uuid: M(7), action: "hide", reason: "Plus de 3 signalements, propos jugés injurieux.", target: C(8), type: "critic", created_at: daysAgo(10), user_id: 2 },
-    { uuid: M(8), action: "warn", reason: "Avis injurieux masqué : avertissement.", target: U(8), type: "user", created_at: daysAgo(10), user_id: 2 },
-    { uuid: M(9), action: "approve", reason: "Avis conforme et constructif.", target: C(1), type: "critic", created_at: daysAgo(39), user_id: 3 },
-    { uuid: M(10), action: "approve", reason: "Fiche conforme aux règles.", target: S(7), type: "server", created_at: daysAgo(390), user_id: 3 },
+    { uuid: M(1), action: "status_change", reason: "pending → approved : Fiche complète et conforme.", target: S(1), type: "server", created_at: daysAgo(290), user_id: 1 },
+    { uuid: M(2), action: "status_change", reason: "pending → approved : Fiche complète et conforme.", target: S(2), type: "server", created_at: daysAgo(200), user_id: 1 },
+    { uuid: M(3), action: "status_change", reason: "pending → approved : Fiche complète et conforme.", target: S(3), type: "server", created_at: daysAgo(490), user_id: 2 },
+    { uuid: M(4), action: "status_change", reason: "pending → approved : Fiche conforme aux règles.", target: S(4), type: "server", created_at: daysAgo(110), user_id: 2 },
+    { uuid: M(5), action: "status_change", reason: "pending → approved : Fiche conforme aux règles.", target: S(5), type: "server", created_at: daysAgo(250), user_id: 3 },
+    { uuid: M(6), action: "status_change", reason: "pending → rejected : Contenu non conforme aux règles de la plateforme.", target: S(10), type: "server", created_at: daysAgo(25), user_id: 1 },
+    { uuid: M(7), action: "status_change", reason: "approved → rejected : Plus de 3 signalements, propos jugés injurieux.", target: C(8), type: "review", created_at: daysAgo(10), user_id: 2 },
+    { uuid: M(8), action: "role_change", reason: "member → member : exemple", target: U(8), type: "user", created_at: daysAgo(10), user_id: 2 },
+    { uuid: M(9), action: "status_change", reason: "pending → approved : Avis conforme et constructif.", target: C(1), type: "review", created_at: daysAgo(39), user_id: 3 },
+    { uuid: M(10), action: "status_change", reason: "pending → approved : Fiche conforme aux règles.", target: S(7), type: "server", created_at: daysAgo(390), user_id: 3 },
   ],
 });
 
@@ -154,7 +154,7 @@ await prisma.serverHasTag.createMany({
 // ---------- Reports (10) : l'avis n°8 a 4 signalements (> 3) -> masqué ----------
 await prisma.report.createMany({
   data: [
-    { user_uuid: U(1), critic_uuid: C(8), reason: "Propos injurieux", created_at: daysAgo(14) },
+    { user_uuid: "9e1949af-fd61-41d5-9ddd-18080cbbfd29", critic_uuid: C(8), reason: "Propos injurieux", created_at: daysAgo(14) },
     { user_uuid: U(2), critic_uuid: C(8), reason: "Propos injurieux", created_at: daysAgo(13) },
     { user_uuid: U(3), critic_uuid: C(8), reason: "Avis sans argument, haineux", created_at: daysAgo(12) },
     { user_uuid: U(4), critic_uuid: C(8), reason: "Harcèlement envers le serveur", created_at: daysAgo(11) },

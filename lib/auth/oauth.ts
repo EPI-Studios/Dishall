@@ -1,4 +1,3 @@
-// À placer dans : lib/auth/oauth.ts (nouveau fichier)
 import { randomBytes, timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 

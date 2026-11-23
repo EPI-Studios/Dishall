@@ -18,7 +18,7 @@ type ModerationReview = {
   server: { name: string };
 };
 
-export default function ReviewCase({ review }: { review: ModerationReview }) {
+export default function ReviewCase({ review, canDelete }: { review: ModerationReview, canDelete: boolean }) {
   const router = useRouter();
   const [reviewToDelete, setReviewToDelete] = useState<ModerationReview | null>(
     null,
@@ -77,14 +77,20 @@ export default function ReviewCase({ review }: { review: ModerationReview }) {
     if (!reviewToUpdate) return;
 
     const status = formData.get("status") as string;
+    const reason = String(formData.get("reason")).trim();
 
     if (status !== "approved" && status !== "pending" && status !== "hidden") {
       setUpdateError("Choisis un statut");
       return;
     }
 
+    if (reason.length < 5) {
+      setUpdateError("Indique une raison d'au moins 5 caractères.");
+      return;
+    }
+
     try {
-      await handleUpdateReviewStatus(reviewToUpdate.uuid, status);
+      await handleUpdateReviewStatus(reviewToUpdate.uuid, status, reason);
       setReviewToUpdate(null);
       setUpdateError(null);
       router.refresh();
@@ -130,7 +136,8 @@ export default function ReviewCase({ review }: { review: ModerationReview }) {
                 color="var(--color-white)"
               />
             </button>
-            <button
+            {canDelete && (
+              <button
               type="button"
               aria-label={`Supprimer ${review.comment}`}
               className="flex size-10 cursor-pointer items-center justify-center rounded-full bg-pink"
@@ -143,6 +150,8 @@ export default function ReviewCase({ review }: { review: ModerationReview }) {
                 color="var(--color-white)"
               />
             </button>
+            )}
+            
           </div>
         </div>
       </article>
@@ -158,7 +167,7 @@ export default function ReviewCase({ review }: { review: ModerationReview }) {
           >
             <p className="mb-6 text-lg">
               Supprimer le commentaire de{" "}
-              <span className="font-bold">{reviewToDelete.user?.pseudo}</span> ?
+              <span className="font-bold">{reviewToDelete.user?.pseudo ?? "un utilisateur supprimé"}</span> ?
               Cette action est irréversible.
             </p>
 
@@ -209,6 +218,21 @@ export default function ReviewCase({ review }: { review: ModerationReview }) {
                 <option value="pending">En attente</option>
                 <option value="hidden">Caché</option>
               </select>
+            </div>
+
+            <div className="flex flex-col items-center justify-center mb-8">
+              <label htmlFor="reason" className="text-xl mb-4">
+                Raison
+              </label>
+              <textarea
+                name="reason"
+                rows={3}
+                required
+                minLength={5}
+                maxLength={500}
+                placeholder="Pourquoi ce changement ?"
+                className="w-full min-w-64 resize-none rounded-xl border border-pink bg-transparent p-2"
+              />
             </div>
 
             {updateError && (

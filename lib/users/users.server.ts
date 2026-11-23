@@ -25,4 +25,16 @@ export async function getAllUsersForAdmin(page = 1) {
   ]);
 
   return { users, totalPages: Math.max(1, Math.ceil(total / PAGE_SIZE)) };
+};
+
+export async function isCurrentUserAdmin() {
+  const current = await getCurrentUser();
+  if (!current) return false;
+
+  const user = await prisma.user.findUnique({
+    where: { discord_id: current.sub },
+    select: { role: true },
+  });
+
+  return user?.role === "admin";
 }

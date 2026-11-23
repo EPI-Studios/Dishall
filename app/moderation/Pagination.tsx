@@ -9,7 +9,7 @@ type Props = {
 export default function Pagination({ view, currentPage, totalPages }: Props) {
   if (totalPages <= 1) return null; // rien à paginer
 
-  const href = (page: number) => `/admin?view=${view}&page=${page}`;
+  const href = (page: number) => `/moderation?view=${view}&page=${page}`;
 
   return (
     <nav

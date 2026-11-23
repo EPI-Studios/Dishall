@@ -36,13 +36,13 @@ export default function Header() {
             Catégories
           </Link>
           {(user?.role === "admin" || user?.role === "moderator") && (
-            <Link className="hover:font-bold lg:text-xl" href="/moderation">
-              Modération
+            <Link className="hover:font-bold lg:text-xl" href="/journal">
+              Journal
             </Link>
           )} 
-          { user?.role === "admin" && (
-            <Link className="hover:font-bold lg:text-xl" href="/admin">
-              Administration
+          {(user?.role === "admin" || user?.role === "moderator") && (
+            <Link className="hover:font-bold lg:text-xl" href="/moderation">
+              Modération
             </Link>
           )} 
         </nav>

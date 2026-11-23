@@ -1,17 +1,14 @@
 import { getAllModAction } from "@/lib/mod_actions/mod_action.server";
 import { redirect } from "next/navigation";
-import Pagination from "../admin/Pagination";
 import ModActionCase from "./ModActionCase";
 
-export default async function ActionsSection({ page }: { page: number }) {
+export default async function ActionsSection() {
 
-  const result = await getAllModAction(page);
+  const result = await getAllModAction();
 
   if (!result) redirect("/");
 
-  const { actions, totalPages } = result;
-
-  if (page > totalPages) redirect(`/moderation?page=${totalPages}`);
+  const { actions } = result;
 
   return (
     <>
@@ -21,7 +18,6 @@ export default async function ActionsSection({ page }: { page: number }) {
         ))}
       </div>
 
-      <Pagination view="servers" currentPage={page} totalPages={totalPages} />
     </>
   );
 }

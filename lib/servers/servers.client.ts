@@ -73,15 +73,19 @@ export async function handleUpdateServer(
   return response.json(); // ta route PATCH renvoie le serveur mis à jour
 }
 
-export async function handleUpdateServerStatus(uuid: string, status: string) {
+export async function handleUpdateServerStatus(
+  uuid: string,
+  status: "approved" | "pending" | "rejected",
+  reason: string,
+) {
   let response: Response;
 
   try {
-    response = await fetch(`/api/admin/servers/${uuid}/`, {
+    response = await fetch(`/api/admin/servers/${uuid}`, {
       method: "PATCH",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
+      body: JSON.stringify({ status, reason }),
     });
   } catch {
     throw new Error("Impossible de contacter le serveur");
@@ -91,6 +95,8 @@ export async function handleUpdateServerStatus(uuid: string, status: string) {
     const body = await response.json().catch(() => null);
     throw new Error(body?.error ?? "La modification a échoué");
   }
+
+  return response.json();
 }
 
 export async function handleAdminDeleteServer(uuid: string) {

@@ -4,15 +4,21 @@ import Footer from "@/app/components/Footer";
 import { Icon } from "@iconify/react";
 import { Metadata } from "next";
 import { Suspense } from "react";
-import ActionsSection from "./ActionsSection";
+import ServersSection from "./ServersSection";
+import ViewSelect from "./ViewSelect";
+import UsersSection from "./UsersSection";
+import ReviewsSection from "./ReviewsSection";
+import { isCurrentUserAdmin } from "@/lib/users/users.server";
 
 export const metadata: Metadata = {
-  title: "DisHall | Modération",
+  title: "DisHall | Administration",
 };
 
 type Props = {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ view?: string; page?: string }>;
 };
+
+
 
 export default async function AdminPage({ searchParams }: Props) {
   return (
@@ -34,7 +40,7 @@ export default async function AdminPage({ searchParams }: Props) {
         </Link>
 
         <Suspense fallback={<p className="text-center">Chargement...</p>}>
-          <ModContent searchParams={searchParams} />
+          <AdminContent searchParams={searchParams} />
         </Suspense>
       </main>
 
@@ -43,15 +49,22 @@ export default async function AdminPage({ searchParams }: Props) {
   );
 }
 
-async function ModContent({ searchParams }: Props) {
-  const { page } = await searchParams;
+async function AdminContent({ searchParams }: Props) {
+  const { view, page } = await searchParams;
+  const currentView = view === "servers" || view ==="reviews" ? view : "users"; 
   const currentPage = Math.max(1, Number(page) || 1);
+  
+  const canDelete = await isCurrentUserAdmin();
 
   return (
     <>
       <div className="mb-8 flex justify-center">
-        <ActionsSection page={currentPage} />
+        <ViewSelect current={currentView} />
       </div>
+
+      {currentView === "users" && <UsersSection page={currentPage} canDelete={canDelete} />}
+      {currentView === "servers" && <ServersSection page={currentPage} canDelete={canDelete} />}
+      {currentView === "reviews" && <ReviewsSection page={currentPage} canDelete={canDelete} />}
     </>
   );
 }
