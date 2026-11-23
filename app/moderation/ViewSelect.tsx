@@ -11,10 +11,22 @@ const OPTIONS: { value: View; label: string }[] = [
   { value: "reviews", label: "Commentaires" },
 ];
 
-export default function ViewSelect({ current }: { current: View }) {
+export default function ViewSelect({
+  current,
+  views,
+}: {
+  current: View;
+  views: View[];
+}) {
   const router = useRouter();
   const [, startTransition] = useTransition();
   const [active, setActive] = useOptimistic(current);
+
+  const options = OPTIONS.filter((o) => views.includes(o.value));
+  const activeIndex = Math.max(
+    0,
+    options.findIndex((o) => o.value === active),
+  );
 
   function select(view: View) {
     if (view === active) return;
@@ -28,20 +40,21 @@ export default function ViewSelect({ current }: { current: View }) {
   return (
     <div
       role="tablist"
-      className="relative grid grid-cols-3 rounded-xl border-2 border-pink p-1 text-base lg:text-xl"
+      className="relative grid rounded-xl border-2 border-pink p-1"
+      style={{
+        gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))`,
+      }}
     >
       <span
         aria-hidden="true"
-        className={`absolute inset-y-1 left-1 w-[calc((100%-0.5rem)/3)] rounded-lg bg-pink shadow-[0_0_10px_var(--color-pink)] transition-transform duration-300 ease-out ${
-          active === "users"
-            ? "translate-x-0"
-            : active === "servers"
-              ? "translate-x-full"
-              : "translate-x-[200%]"
-        }`}
+        className="absolute inset-y-1 left-1 rounded-lg bg-pink shadow-[0_0_10px_var(--color-pink)] transition-transform duration-300 ease-out"
+        style={{
+          width: `calc((100% - 0.5rem) / ${options.length})`,
+          transform: `translateX(${activeIndex * 100}%)`,
+        }}
       />
 
-      {OPTIONS.map(({ value, label }) => (
+      {options.map(({ value, label }) => (
         <button
           key={value}
           type="button"

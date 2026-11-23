@@ -90,7 +90,7 @@ export async function PATCH(
     select: { uuid: true, role: true },
   });
 
-  if (admin?.role !== "admin" && admin?.role !== "moderator") {
+  if (admin?.role !== "admin") {
     return NextResponse.json({ error: "Interdit" }, { status: 403 }); // Forbidden
   }
 

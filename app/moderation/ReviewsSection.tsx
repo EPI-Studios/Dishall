@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import Pagination from "./Pagination";
 import ReviewCase from "./ReviewCase";
 
-export default async function ReviewsSection({ page, canDelete }: { page: number; canDelete: boolean }) {
+export default async function ReviewsSection({ page, isAdmin }: { page: number; isAdmin: boolean }) {
   const result = await getAllReviewsModeration(page);
   if (!result) redirect("/");
 
@@ -15,7 +15,7 @@ export default async function ReviewsSection({ page, canDelete }: { page: number
     <>
       <div className="grid gap-8 lg:grid-cols-2">
         {reviews.map((review) => (
-          <ReviewCase key={review.uuid} review={review} canDelete={canDelete}/>
+          <ReviewCase key={review.uuid} review={review} isAdmin={isAdmin}/>
         ))}
       </div>
   

@@ -27,7 +27,7 @@ type ModerationServer = {
   } | null;
 };
 
-export default function ServerCase({ server, canDelete }: { server: ModerationServer, canDelete: boolean }) {
+export default function ServerCase({ server, isAdmin }: { server: ModerationServer, isAdmin: boolean }) {
   const router = useRouter();
   const [serverToDelete, setServerToDelete] = useState<ModerationServer | null>(
     null,
@@ -125,10 +125,10 @@ export default function ServerCase({ server, canDelete }: { server: ModerationSe
           <div className="flex items-center gap-x-4 gap-y-3 lg:grid-cols-[auto_1fr_auto_auto] lg:gap-x-6">
             <Image
               src={discordServerIcon(server.guild_id, server.icon)}
-              width={130}
-              height={130}
+              width={80}
+              height={80}
               alt={`Logo du serveur ${server.name}`}
-              className="size-20 shrink-0 rounded-xl object-cover shadow-[0_0_10px_var(--color-pink)] lg:size-32"
+              className="size-12 shrink-0 rounded-xl object-cover shadow-[0_0_10px_var(--color-pink)] lg:size-20"
             />
 
             <div className="min-w-0 flex-1 pr-20">
@@ -176,7 +176,7 @@ export default function ServerCase({ server, canDelete }: { server: ModerationSe
               color="var(--color-white)"
             />
           </button>
-          {canDelete && (
+          {isAdmin && (
           <button
             type="button"
             aria-label={`Supprimer ${server.name}`}
@@ -259,7 +259,7 @@ export default function ServerCase({ server, canDelete }: { server: ModerationSe
             </div>
 
             <div className="flex flex-col items-center justify-center mb-8">
-              <label htmlFor="reason" className="text-xl mb-4">
+              <label className="text-xl mb-4">
                 Raison
               </label>
               <textarea

@@ -61,12 +61,12 @@ export async function POST(request: NextRequest) {
 
   const { serverUuid, rate, comment } = parsed.data;
 
-  const me = await prisma.user.findUnique({
+  const user = await prisma.user.findUnique({
     where: { discord_id: currentUser.sub },
     select: { id: true },
   });
 
-  if (!me) {
+  if (!user) {
     return NextResponse.json({ error: "Non authentifié" }, { status: 401 }); // Unauthorized
   }
 
@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Règle métier : on ne note pas son propre serveur
-  if (server.user_id === me.id) {
+  if (server.user_id === user.id) {
     return NextResponse.json(
       { error: "Tu ne peux pas donner d'avis sur ton propre serveur" },
       { status: 403 }, // Forbidden
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
         rate,
         status: "approved",
         server: { connect: { id: server.id } },
-        user: { connect: { id: me.id } },
+        user: { connect: { id: user.id } },
       },
       select: {
         uuid: true,

@@ -7,7 +7,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export default function UserCase({ user, canDelete }: { user: UserType, canDelete: boolean }) {
+export default function UserCase({ user, isAdmin }: { user: UserType, isAdmin: boolean }) {
   const router = useRouter();
   const [userToDelete, setUserToDelete] = useState<UserType | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -18,8 +18,8 @@ export default function UserCase({ user, canDelete }: { user: UserType, canDelet
 
   const DEFAULT_AVATAR = "https://cdn.discordapp.com/embed/avatars/0.png";
 
-  const isAdmin = user.role === "admin";
-  const infoHoverClass = isAdmin
+  const isTargetAdmin = user.role === "admin";
+  const infoHoverClass = isTargetAdmin
     ? ""
     : "lg:pointer-events-none lg:select-none lg:transition-opacity lg:duration-200 lg:group-hover:opacity-0 lg:group-focus-within:opacity-0";
 
@@ -93,7 +93,7 @@ export default function UserCase({ user, canDelete }: { user: UserType, canDelet
             <h3 className="line-clamp-1 font-bold">{user.pseudo}</h3>
             <p>{user.role}</p>
           </div>
-          {user.role !== "admin" && (
+          {!isTargetAdmin&& (
             <div className="flex items-center gap-4 lg:pointer-events-none lg:col-start-1 lg:row-start-1 lg:justify-center lg:opacity-0 lg:transition-opacity lg:duration-200 lg:group-hover:pointer-events-auto lg:group-hover:opacity-100 lg:group-focus-within:pointer-events-auto lg:group-focus-within:opacity-100">
               <button
                 type="button"
@@ -108,7 +108,7 @@ export default function UserCase({ user, canDelete }: { user: UserType, canDelet
                   color="var(--color-white)"
                 />
               </button>
-              {canDelete && (
+              {isAdmin && (
               <button
                 type="button"
                 aria-label={`Supprimer ${user.pseudo}`}
@@ -192,7 +192,7 @@ export default function UserCase({ user, canDelete }: { user: UserType, canDelet
             </div>
 
             <div className="flex flex-col items-center justify-center mb-8">
-              <label htmlFor="reason" className="text-xl mb-4">
+              <label className="text-xl mb-4">
                 Raison
               </label>
               <textarea

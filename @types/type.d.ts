@@ -1,5 +1,4 @@
 export type ServerType = {
-  id: number;
   uuid: string;
   name: string;
   guild_id: string;

@@ -7,11 +7,11 @@ export async function getAllUsersForAdmin(page = 1) {
   const current = await getCurrentUser();
   if (!current) return null;
 
-  const admin = await prisma.user.findUnique({
+  const user = await prisma.user.findUnique({
     where: { discord_id: current.sub },
     select: { role: true },
   });
-  if (admin?.role !== "admin") return null;
+  if (user?.role !== "admin") return null;
 
   const PAGE_SIZE = 10;
 

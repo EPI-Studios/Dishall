@@ -20,11 +20,12 @@ export async function getAllReviewsModeration(page = 1) {
   const current = await getCurrentUser();
   if (!current) return null;
 
-  const me = await prisma.user.findUnique({
+  const user = await prisma.user.findUnique({
     where: { discord_id: current.sub },
     select: { role: true },
   });
-  if (me?.role !== "admin" && me?.role !== "moderator") return null;
+
+  if (user?.role !== "admin" && user?.role !== "moderator") return null;
 
   const [reviews, total] = await prisma.$transaction([
     prisma.critic.findMany({

@@ -18,7 +18,7 @@ type Props = {
   searchParams: Promise<{ view?: string; page?: string }>;
 };
 
-
+type View = "users" | "servers" | "reviews";
 
 export default async function AdminPage({ searchParams }: Props) {
   return (
@@ -51,20 +51,26 @@ export default async function AdminPage({ searchParams }: Props) {
 
 async function AdminContent({ searchParams }: Props) {
   const { view, page } = await searchParams;
-  const currentView = view === "servers" || view ==="reviews" ? view : "users"; 
   const currentPage = Math.max(1, Number(page) || 1);
   
-  const canDelete = await isCurrentUserAdmin();
+  const isAdmin = await isCurrentUserAdmin();
+
+  // Un modérateur n'a pas accès aux utilisateurs
+  const views: View[] = isAdmin
+    ? ["users", "servers", "reviews"]
+    : ["servers", "reviews"];
+
+    const currentView = views.find((v) => v === view) ?? views[0]
 
   return (
     <>
       <div className="mb-8 flex justify-center">
-        <ViewSelect current={currentView} />
+        <ViewSelect current={currentView} views={views}/>
       </div>
 
-      {currentView === "users" && <UsersSection page={currentPage} canDelete={canDelete} />}
-      {currentView === "servers" && <ServersSection page={currentPage} canDelete={canDelete} />}
-      {currentView === "reviews" && <ReviewsSection page={currentPage} canDelete={canDelete} />}
+      {currentView === "users" && <UsersSection page={currentPage} isAdmin={isAdmin} />}
+      {currentView === "servers" && <ServersSection page={currentPage} isAdmin={isAdmin} />}
+      {currentView === "reviews" && <ReviewsSection page={currentPage} isAdmin={isAdmin} />}
     </>
   );
 }

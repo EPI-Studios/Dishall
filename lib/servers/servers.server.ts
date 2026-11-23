@@ -40,7 +40,8 @@ export async function getAllServersForAdmin(page = 1) {
     where: { discord_id: current.sub },
     select: { role: true },
   });
-  if (user?.role !== "admin") return null;
+
+  if (user?.role !== "admin" && user?.role !== "moderator") return null;
 
   const [servers, total] = await prisma.$transaction([
     prisma.server.findMany({

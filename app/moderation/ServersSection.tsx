@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import Pagination from "./Pagination";
 import ServerCase from "./ServerCase";
 
-export default async function ServersSection({ page, canDelete }: { page: number, canDelete: boolean }) {
+export default async function ServersSection({ page, isAdmin }: { page: number, isAdmin: boolean }) {
 
   const result = await getAllServersForAdmin(page);
 
@@ -17,7 +17,7 @@ export default async function ServersSection({ page, canDelete }: { page: number
     <>
       <div className="grid gap-8 lg:grid-cols-2">
         {servers.map((server) => (
-          <ServerCase key={server.uuid} server={server} canDelete={canDelete} />
+          <ServerCase key={server.uuid} server={server} isAdmin={isAdmin} />
         ))}
       </div>
 

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   title: "DisHall | Modération",
 };
 
-export default async function AdminPage() {
+export default async function JournalPage() {
   return (
     <>
       <Header />

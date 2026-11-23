@@ -18,7 +18,13 @@ type ModerationReview = {
   server: { name: string };
 };
 
-export default function ReviewCase({ review, canDelete }: { review: ModerationReview, canDelete: boolean }) {
+export default function ReviewCase({
+  review,
+  isAdmin,
+}: {
+  review: ModerationReview;
+  isAdmin: boolean;
+}) {
   const router = useRouter();
   const [reviewToDelete, setReviewToDelete] = useState<ModerationReview | null>(
     null,
@@ -103,43 +109,44 @@ export default function ReviewCase({ review, canDelete }: { review: ModerationRe
 
   return (
     <>
-      <article className="group rounded-xl border-2 border-pink bg-dark p-4 shadow-[0_0_10px_var(--color-pink)] ">
-        <div className="flex items-center gap-x-4 gap-y-3 lg:grid-cols-[auto_1fr_auto_auto] lg:gap-x-6">
-          <div>
-            <h3 className="min-w-0 text-xl line-clamp-1 font-bold lg:text-xl">
-              De {review.user?.pseudo || "Utilisateur supprimé"}
-            </h3>
-            <p className="font-bold">Sur {review.server.name}</p>
-            <p>
-              le{" "}
-              <time dateTime={review.created_at.toISOString()}>
-                {formattedDate}
-              </time>
-            </p>
-            <span className="font-bold">{review.rate}/5 ⭐</span>
-            <p>{review.comment}</p>
-            <span>
-              {emoji} {review.status}
-            </span>
-          </div>
-          <div className="flex items-center gap-4 lg:pointer-events-none lg:col-start-1 lg:row-start-1 lg:justify-center lg:opacity-0 lg:transition-opacity lg:duration-200 lg:group-hover:pointer-events-auto lg:group-hover:opacity-100 lg:group-focus-within:pointer-events-auto lg:group-focus-within:opacity-100">
+      <article className="group relative rounded-xl border-2 border-pink bg-dark p-4 shadow-[0_0_10px_var(--color-pink)]">
+        <div className="min-w-0">
+          {/* pr-24 : garde la place des boutons sur les deux premières lignes */}
+          <h3 className="line-clamp-1 pr-24 text-xl font-bold">
+            De {review.user?.pseudo || "Utilisateur supprimé"}
+          </h3>
+          <p className="pr-24 font-bold">Sur {review.server.name}</p>
+          <p>
+            le{" "}
+            <time dateTime={review.created_at.toISOString()}>
+              {formattedDate}
+            </time>
+          </p>
+          <span className="font-bold">{review.rate}/5 ⭐</span>
+          <p className="break-words">{review.comment}</p>
+          <span>
+            {emoji} {review.status}
+          </span>
+        </div>
+
+        <div className="absolute right-4 top-4 flex items-center gap-2 opacity-100 transition-opacity duration-200 lg:pointer-events-none lg:opacity-0 lg:group-hover:pointer-events-auto lg:group-hover:opacity-100 lg:group-focus-within:pointer-events-auto lg:group-focus-within:opacity-100">
+          <button
+            type="button"
+            className="flex size-10 cursor-pointer items-center justify-center rounded-full bg-pink"
+            aria-label={`Modifier le statut du commentaire de ${review.user?.pseudo ?? "un utilisateur supprimé"}`}
+            onClick={() => setReviewToUpdate(review)}
+          >
+            <Icon
+              icon="radix-icons:pencil-1"
+              width="24"
+              height="24"
+              color="var(--color-white)"
+            />
+          </button>
+          {isAdmin && (
             <button
               type="button"
-              className="flex size-10 cursor-pointer items-center justify-center rounded-full bg-pink"
-              aria-label={`Modifier statut de ${review.comment}`}
-              onClick={() => setReviewToUpdate(review)}
-            >
-              <Icon
-                icon="radix-icons:pencil-1"
-                width="24"
-                height="24"
-                color="var(--color-white)"
-              />
-            </button>
-            {canDelete && (
-              <button
-              type="button"
-              aria-label={`Supprimer ${review.comment}`}
+              aria-label={`Supprimer le commentaire de ${review.user?.pseudo ?? "un utilisateur supprimé"}`}
               className="flex size-10 cursor-pointer items-center justify-center rounded-full bg-pink"
               onClick={() => setReviewToDelete(review)}
             >
@@ -150,9 +157,7 @@ export default function ReviewCase({ review, canDelete }: { review: ModerationRe
                 color="var(--color-white)"
               />
             </button>
-            )}
-            
-          </div>
+          )}
         </div>
       </article>
 
@@ -167,8 +172,10 @@ export default function ReviewCase({ review, canDelete }: { review: ModerationRe
           >
             <p className="mb-6 text-lg">
               Supprimer le commentaire de{" "}
-              <span className="font-bold">{reviewToDelete.user?.pseudo ?? "un utilisateur supprimé"}</span> ?
-              Cette action est irréversible.
+              <span className="font-bold">
+                {reviewToDelete.user?.pseudo ?? "un utilisateur supprimé"}
+              </span>{" "}
+              ? Cette action est irréversible.
             </p>
 
             {deleteError && (
@@ -221,9 +228,7 @@ export default function ReviewCase({ review, canDelete }: { review: ModerationRe
             </div>
 
             <div className="flex flex-col items-center justify-center mb-8">
-              <label htmlFor="reason" className="text-xl mb-4">
-                Raison
-              </label>
+              <label className="text-xl mb-4">Raison</label>
               <textarea
                 name="reason"
                 rows={3}

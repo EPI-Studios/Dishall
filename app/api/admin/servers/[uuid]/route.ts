@@ -1,4 +1,3 @@
-// À placer dans : app/api/admin/servers/[uuid]/route.ts (renomme le fichier en route.ts)
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth/auth.server";
@@ -59,12 +58,12 @@ export async function PATCH(
     return NextResponse.json({ error: "Non authentifié" }, { status: 401 }); // Unauthorized
   }
 
-  const me = await prisma.user.findUnique({
+  const user = await prisma.user.findUnique({
     where: { discord_id: currentUser.sub },
     select: { uuid: true, role: true },
   });
   
-  if (me?.role !== "admin" && me?.role !== "moderator") {
+  if (user?.role !== "admin" && user?.role !== "moderator") {
     return NextResponse.json({ error: "Interdit" }, { status: 403 }); // Forbidden
   }
 
@@ -83,7 +82,7 @@ export async function PATCH(
 
   const parsed = statusSchema.safeParse(body);  
   if (!parsed.success) {
-    return NextResponse.json({ error: "Statut invalide" }, { status: 400 }); // Bad Request
+    return NextResponse.json({ error: "Données invalides" }, { status: 400 }); // Bad Request
   }
 
   const { status, reason } = parsed.data;
@@ -108,7 +107,7 @@ export async function PATCH(
     const [updatedServer] = await prisma.$transaction([
       prisma.server.update({ where: { uuid }, data: { status } }),
       logModAction({
-        moderatorUuid: me.uuid,
+        moderatorUuid: user.uuid,
         action: "status_change",
         type: "server",
         target: uuid,

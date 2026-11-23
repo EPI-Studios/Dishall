@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import Pagination from "./Pagination";
 import UserCase from "./UserCase";
 
-export default async function UsersSection({ page, canDelete }: { page: number, canDelete: boolean }) {
+export default async function UsersSection({ page, isAdmin }: { page: number, isAdmin: boolean }) {
   const result = await getAllUsersForAdmin(page);
   if (!result) redirect("/");
 
@@ -15,7 +15,7 @@ export default async function UsersSection({ page, canDelete }: { page: number, 
     <>
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {users.map((user) => (
-          <UserCase key={user.uuid} user={user} canDelete={canDelete} />
+          <UserCase key={user.uuid} user={user} isAdmin={isAdmin} />
         ))}
       </div>
 
