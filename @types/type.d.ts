@@ -16,7 +16,8 @@ export type ServerType = {
   bumped: boolean;
   owner?: boolean;
   created_at: Date;
-  status?: string
+  status?: string;
+  score: number
 };
 
 export type UserType = {

@@ -11,6 +11,7 @@ const C = (n: number) => uuid("d4", n); // critic
 const M = (n: number) => uuid("e5", n); // mod_action
 const T = (n: number) => uuid("f6", n); // tag
 
+const minutesAgo = (m: number) => new Date(Date.now() - m - 60_000)
 const hoursAgo = (h: number) => new Date(Date.now() - h * 3_600_000);
 const daysAgo = (d: number) => hoursAgo(d * 24);
 
@@ -57,16 +58,16 @@ await prisma.server.createMany({
 // ---------- Server stats (10) ----------
 await prisma.server_Stats.createMany({
   data: [
-    { last_bump_at: hoursAgo(2), users_nb: 1520, created_at: daysAgo(300), server_id: 1 },
-    { last_bump_at: daysAgo(1), users_nb: 860, created_at: daysAgo(210), server_id: 2 },
-    { last_bump_at: hoursAgo(5), users_nb: 3400, created_at: daysAgo(500), server_id: 3 },
-    { last_bump_at: daysAgo(6), users_nb: 410, created_at: daysAgo(120), server_id: 4 },
-    { last_bump_at: daysAgo(3), users_nb: 975, created_at: daysAgo(260), server_id: 5 },
-    { last_bump_at: daysAgo(12), users_nb: 230, created_at: daysAgo(90), server_id: 6 },
-    { last_bump_at: hoursAgo(8), users_nb: 2100, created_at: daysAgo(400), server_id: 7 },
-    { last_bump_at: daysAgo(15), users_nb: 75, created_at: daysAgo(15), server_id: 8 },
-    { last_bump_at: daysAgo(2), users_nb: 640, created_at: daysAgo(180), server_id: 9 },
-    { last_bump_at: daysAgo(30), users_nb: 40, created_at: daysAgo(30), server_id: 10 },
+    { last_bump_at: hoursAgo(1), users_nb: 1520, created_at: daysAgo(300), server_id: 1 },
+    { last_bump_at: minutesAgo(10), users_nb: 860, created_at: daysAgo(210), server_id: 2 },
+    { last_bump_at: minutesAgo(41), users_nb: 3400, created_at: daysAgo(500), server_id: 3 },
+    { last_bump_at: minutesAgo(16), users_nb: 410, created_at: daysAgo(120), server_id: 4 },
+    { last_bump_at: minutesAgo(1), users_nb: 975, created_at: daysAgo(260), server_id: 5 },
+    { last_bump_at: minutesAgo(55), users_nb: 230, created_at: daysAgo(90), server_id: 6 },
+    { last_bump_at: minutesAgo(5), users_nb: 2100, created_at: daysAgo(400), server_id: 7 },
+    { users_nb: 75, created_at: daysAgo(15), server_id: 8 },
+    { last_bump_at: minutesAgo(8), users_nb: 640, created_at: daysAgo(180), server_id: 9 },
+    { users_nb: 40, created_at: daysAgo(30), server_id: 10 },
   ],
 });
 
@@ -149,15 +150,6 @@ await prisma.report.createMany({
     { user_uuid: U(5), critic_uuid: C(13), reason: "Avis trop sévère", created_at: daysAgo(6) },
   ],
 });
-
-await prisma.$executeRaw`
-  UPDATE server SET score = sub.s
-  FROM (
-    SELECT server_id, ROUND(AVG(rate) * 2, 1) AS s
-    FROM critic WHERE status = 'approved' GROUP BY server_id
-  ) sub
-  WHERE server.id = sub.server_id
-`;
 
 console.log("📊 Échantillonnage effectué avec succès.");
 await prisma.$disconnect();

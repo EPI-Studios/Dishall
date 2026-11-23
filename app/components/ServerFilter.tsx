@@ -6,15 +6,23 @@ import type { ServerType } from "@/@types/type";
 import ServerList from "./ServerList";
 
 export default function ServerFilter({ servers }: { servers: ServerType[] }) {
-  const [sortBy, setSortBy] = useState("popularity");
+  const [sortBy, setSortBy] = useState("score");
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  const SORT_OPTIONS = [
+    { value: "score", label: "Meilleur score" },
+    { value: "popularity", label: "Popularité" },
+    { value: "name", label: "Nom (A-Z)" },
+    { value: "rating", label: "Avis" },
+  ];
 
   // Copie obligatoire : sort() modifierait le tableau reçu en props
   const sorted = [...servers].sort((a, b) => {
     if (sortBy === "name") return a.name.localeCompare(b.name, "fr");
     if (sortBy === "rating") return b.rating - a.rating;
-    return b.members - a.members;
+    if (sortBy === "popularity") return b.members - a.members;
+    return b.score - a.score || b.members - a.members; // score, puis membres en cas d'égalité
   });
 
   return (
@@ -48,47 +56,22 @@ export default function ServerFilter({ servers }: { servers: ServerType[] }) {
             >
               <p className="px-3 py-1 text-xs opacity-70">Trier par</p>
 
-              <button
-                type="button"
-                aria-pressed={sortBy === "popularity"}
-                onClick={() => {
-                  setSortBy("popularity");
-                  setIsOpen(false);
-                }}
-                className={`cursor-pointer rounded-lg px-3 py-2 text-left transition hover:bg-pink/20 ${
-                  sortBy === "popularity" ? "bg-pink/30 font-bold" : ""
-                }`}
-              >
-                <p>Popularité</p>
-              </button>
-
-              <button
-                type="button"
-                aria-pressed={sortBy === "name"}
-                onClick={() => {
-                  setSortBy("name");
-                  setIsOpen(false);
-                }}
-                className={`cursor-pointer rounded-lg px-3 py-2 text-left transition hover:bg-pink/20 ${
-                  sortBy === "name" ? "bg-pink/30 font-bold" : ""
-                }`}
-              >
-                <p>Nom (A-Z)</p>
-              </button>
-
-              <button
-                type="button"
-                aria-pressed={sortBy === "rating"}
-                onClick={() => {
-                  setSortBy("rating");
-                  setIsOpen(false);
-                }}
-                className={`cursor-pointer rounded-lg px-3 py-2 text-left transition hover:bg-pink/20 ${
-                  sortBy === "rating" ? "bg-pink/30 font-bold" : ""
-                }`}
-              >
-                <p>Avis</p>
-              </button>
+              {SORT_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  aria-pressed={sortBy === option.value}
+                  onClick={() => {
+                    setSortBy(option.value);
+                    setIsOpen(false);
+                  }}
+                  className={`cursor-pointer rounded-lg px-3 py-2 text-left transition hover:bg-pink/20 ${
+                    sortBy === option.value ? "bg-pink/30 font-bold" : ""
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
             </div>
           )}
         </div>

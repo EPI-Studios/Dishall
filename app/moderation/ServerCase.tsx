@@ -17,11 +17,12 @@ type ModerationServer = {
   name: string;
   status: string;
   icon: string | null;
+  score: number | null;
   serverStats: {
-    server_bump: boolean;
     last_bump_at: Date | null;
     users_nb: number;
   } | null;
+  bumped: boolean
 };
 
 export default function ServerCase({ server, isAdmin }: { server: ModerationServer, isAdmin: boolean }) {
@@ -139,9 +140,7 @@ export default function ServerCase({ server, isAdmin }: { server: ModerationServ
                 {emoji} {server.status}
               </span>
               <p>
-                {server.serverStats?.server_bump
-                  ? "Bump actif"
-                  : "Pas de bump"}{" "}
+                {server.bumped ? "🚀 Bump actif" : "Pas de bump"}
               </p>
               <p>
                 Dernier bump :{" "}
@@ -152,7 +151,7 @@ export default function ServerCase({ server, isAdmin }: { server: ModerationServ
 
           <div className="mt-4 text-center">
             <p className="text-lg font-bold">
-              Pas de note
+              {server.score ? `Score : ${server.score}/10` : "Pas de score" }
             </p>
           </div>
         </Link>

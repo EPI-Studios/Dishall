@@ -7,7 +7,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:unit": "tsx --test \"test/unit/**/*.test.ts\"",
+    "test:db": "node test/run-with-env.mjs prisma migrate deploy --config prisma7.config.ts",
+    "test:server": "node test/run-with-env.mjs next dev -p 3100",
+    "test:api": "node test/run-with-env.mjs tsx --test --test-concurrency=1 \"test/api/*.test.ts\""
   },
   "dependencies": {
     "@iconify/react": "^6.0.3",
@@ -31,6 +35,7 @@
     "eslint-config-next": "16.4.6",
     "prisma": "^7.10.1",
     "tailwindcss": "^4",
+    "ts-node": "^10.9.2",
     "tsx": "^4.23.15",
     "typescript": "^5"
   }

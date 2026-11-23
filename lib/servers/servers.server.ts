@@ -5,6 +5,10 @@ import { getCurrentUser } from "../auth/auth.server";
 import { prisma } from "../prisma";
 import { z } from "zod";
 import { Prisma } from "@/generated/prisma/client";
+import { isBumped } from "@/util/bump";
+import { calculateServerScore } from "@/util/score";
+
+const PAGE_SIZE = 10;
 
 const publicServerSelect = {
   uuid: true,
@@ -18,7 +22,7 @@ const publicServerSelect = {
   banner: true,
   created_at: true,
   tags: { select: { tag: { select: { name: true } } } },
-  serverStats: { select: { users_nb: true, server_bump: true } },
+  serverStats: { select: { users_nb: true, last_bump_at: true } },
   critics: { where: { status: "approved" }, select: { rate: true } },
 } satisfies Prisma.ServerSelect;
 
@@ -26,6 +30,10 @@ type PublicServer = Prisma.ServerGetPayload<{ select: typeof publicServerSelect 
 
 function toServerType(server: PublicServer): ServerType {
   const rates = server.critics.map((critic) => critic.rate);
+  const ratingAvg = rates.length ? rates.reduce((sum, rate) => sum + rate, 0) / rates.length : null;
+
+  const members = server.serverStats?.users_nb ?? 0;
+  const lastBumpAt = server.serverStats?.last_bump_at ?? null;
 
   return {
     uuid: server.uuid,
@@ -38,26 +46,31 @@ function toServerType(server: PublicServer): ServerType {
     icon: server.icon ?? "",
     banner: server.banner ?? "",
     created_at: server.created_at,
-    members: server.serverStats?.users_nb ?? 0,
-    bumped: server.serverStats?.server_bump ?? false,
+    members,
+    bumped: isBumped(lastBumpAt),
     tags: server.tags.map((serverTag) => serverTag.tag.name),
-    rating: rates.length ? rates.reduce((sum, rate) => sum + rate, 0) / rates.length : 0,
+    rating: ratingAvg ?? 0,
     reviewCount: rates.length,
+    score: calculateServerScore({
+      ratingAvg,
+      members,
+      descriptionLength: server.description?.length ?? 0,
+      lastBumpAt,
+    }),
   };
 }
 
 export async function getServers(): Promise<ServerType[]> {
-  
   const servers = await prisma.server.findMany({
     where: { status: "approved" },
     select: publicServerSelect,
   });
 
   return servers.map(toServerType);
-};
+}
 
 export async function getLatestServers(limit = 4): Promise<ServerType[]> {
-  // Tri et limite en base 
+  // Tri et limite en base
   const servers = await prisma.server.findMany({
     where: { status: "approved" },
     orderBy: { created_at: "desc" },
@@ -80,8 +93,6 @@ export async function getServerByUuid(uuid: string): Promise<ServerType | undefi
   return server ? toServerType(server) : undefined;
 }
 
-const PAGE_SIZE = 10;
-
 export async function getAllServersForAdmin(page = 1) {
   const current = await getCurrentUser();
   if (!current) return null;
@@ -101,17 +112,36 @@ export async function getAllServersForAdmin(page = 1) {
       select: {
         uuid: true,
         name: true,
+        description: true,
         status: true,
         guild_id: true,
         icon: true,
-        serverStats: { select: { users_nb: true, server_bump: true, last_bump_at: true } },
+        serverStats: { select: { users_nb: true, last_bump_at: true } },
+        critics: { where: { status: "approved" }, select: { rate: true } },
       },
     }),
     prisma.server.count(),
   ]);
 
-  return { servers, totalPages: Math.max(1, Math.ceil(total / PAGE_SIZE)) };
-};
+  return {
+    servers: servers.map(({ description, critics, ...server }) => {
+    const rates = critics.map((critic) => critic.rate);
+    const ratingAvg = rates.length ? rates.reduce((sum, rate) => sum + rate, 0) / rates.length : null;
+
+    return {
+      ...server,
+      bumped: isBumped(server.serverStats?.last_bump_at),
+      score: calculateServerScore({
+        ratingAvg,
+        members: server.serverStats?.users_nb ?? 0,
+        descriptionLength: description?.length ?? 0,
+        lastBumpAt: server.serverStats?.last_bump_at ?? null,
+      }),
+    };
+  }),
+    totalPages: Math.max(1, Math.ceil(total / PAGE_SIZE)),
+  };
+}
 
 export async function isServerOwner(serverUuid: string): Promise<boolean> {
   const current = await getCurrentUser();
@@ -123,5 +153,3 @@ export async function isServerOwner(serverUuid: string): Promise<boolean> {
 
   return count > 0;
 }
-
-
