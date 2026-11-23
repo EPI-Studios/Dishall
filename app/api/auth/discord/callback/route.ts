@@ -4,6 +4,9 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { clearStateCookie, isValidState } from "@/lib/auth/oauth";
+import { randomInt } from "node:crypto";
+import { Prisma } from "@/generated/prisma/client";
+import { isReservedPseudo } from "@/util/pseudo";
 
 const discordTokenSchema = z.object({
   access_token: z.string(),
@@ -21,6 +24,34 @@ function fail(error: string, status: number) {
   const response = NextResponse.json({ error }, { status });
   clearStateCookie(response, "login");
   return response;
+}
+
+async function findOrCreateUser(discordId: string, pseudoBase: string, avatar: string) {
+  const existing = await prisma.user.findUnique({ where: { discord_id: discordId } });
+  if (existing) {
+    return prisma.user.update({ where: { discord_id: discordId }, data: { avatar } });
+  }
+
+  const base = pseudoBase.trim().slice(0, 45); // colonne VarChar(50) : on garde de la place pour le suffixe
+
+  for (let attempt = 0; attempt < 5; attempt++) {
+    // 1er essai : pseudo Discord tel quel (sauf s'il est réservé), puis suffixe aléatoire
+    const pseudo =
+      attempt === 0 && !isReservedPseudo(base) ? base : `${base}-${randomInt(1000, 10000)}`;
+
+    try {
+      return await prisma.user.create({ data: { discord_id: discordId, pseudo, avatar } });
+    } catch (error) {
+      if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== "P2002") {
+        throw error;
+      }
+      // Soit le pseudo est pris, soit deux connexions simultanées ont créé le compte : on regarde
+      const created = await prisma.user.findUnique({ where: { discord_id: discordId } });
+      if (created) return created;
+    }
+  }
+
+  throw new Error("Error");
 }
 
 export async function GET(request: NextRequest) {
@@ -50,7 +81,7 @@ export async function GET(request: NextRequest) {
     !JWT_SECRET ||
     !CLIENT_REDIRECT_URL
   ) {
-    return fail("Erreur serveur", 500); // Internal server error
+    return fail("Internal server error", 500); // Internal server error
   }
 
   // On envoie le code pour recevoir un access token
@@ -72,17 +103,17 @@ export async function GET(request: NextRequest) {
     });
 
     if (!tokenResponse.ok) {
-      return fail("Code refusé par Discord", 400); // Bad Request
+      return fail("Bad request", 400); // Bad Request
     }
 
     const tokenData = discordTokenSchema.safeParse(await tokenResponse.json());
     if (!tokenData.success) {
-      return fail("Réponse Discord inattendue", 502); // Bad Gateway
+      return fail("Bad gateway", 502); // Bad Gateway
     }
 
     accessToken = tokenData.data.access_token;
   } catch {
-    return fail("Discord est injoignable", 502); // Bad Gateway
+    return fail("Bad gateway", 502); // Bad Gateway
   }
 
   // Récupération du profil Discord
@@ -94,17 +125,17 @@ export async function GET(request: NextRequest) {
     });
 
     if (!userResponse.ok) {
-      return fail("Impossible de récupérer le profil Discord", 502); // Bad Gateway
+      return fail("Bad gateway", 502); // Bad Gateway
     }
 
     const parsed = discordUserSchema.safeParse(await userResponse.json());
     if (!parsed.success) {
-      return fail("Profil Discord invalide", 502); // Bad Gateway
+      return fail("Bad gateway", 502); // Bad Gateway
     }
 
     discordUser = parsed.data;
   } catch {
-    return fail("Discord est injoignable", 502); // Bad Gateway
+    return fail("Bad gateway", 502); // Bad Gateway
   }
 
   const { id, username, global_name, avatar: discordAvatar } = discordUser;
@@ -118,20 +149,10 @@ export async function GET(request: NextRequest) {
   let user;
 
   try {
-    user = await prisma.user.upsert({
-      where: { discord_id: id },
-      update: {
-        avatar: avatar,
-      },
-      create: {
-        discord_id: id,
-        pseudo: global_name ?? username, // repli si pas de nom d'affichage
-        avatar: avatar,
-      },
-    });
+    user = await findOrCreateUser(id, global_name ?? username, avatar);
   } catch (error) {
     console.error(error);
-    return fail("Erreur serveur", 500); // Internal server error
+    return fail("Internal server error", 500); // Internal server error
   }
 
   // Le rôle reste dans le token : proxy.ts s'en sert pour rediriger /admin et /moderation.

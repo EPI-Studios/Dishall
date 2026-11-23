@@ -39,10 +39,14 @@ export async function DELETE(
 ) {
   const currentUser = await getCurrentUser();
   if (!currentUser) {
-    return NextResponse.json({ error: "Non authentifié" }, { status: 401 }); // Unauthorized
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 }); // Unauthorized
   }
 
   const { uuid } = await params;
+
+  if (!z.uuid().safeParse(uuid).success) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
 
   try {
     // Le filtre sur le propriétaire est dans le where : on ne peut supprimer que son propre serveur
@@ -57,13 +61,13 @@ export async function DELETE(
       error.code === "P2025"
     ) {
       return NextResponse.json(
-        { error: "Serveur introuvable" },
+        { error: "Not found" },
         { status: 404 }, // Not found
       );
     }
 
     console.error(error);
-    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 }); // Server error
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 }); // Server error
   }
 }
 
@@ -73,24 +77,34 @@ export async function PATCH(
 ) {
   const currentUser = await getCurrentUser();
   if (!currentUser) {
-    return NextResponse.json({ error: "Non authentifié" }, { status: 401 }); // Unauthorized
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 }); // Unauthorized
   }
 
   const { uuid } = await params;
 
+  if (!z.uuid().safeParse(uuid).success) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
   // Une seule requête : le serveur et le discord_id de son propriétaire
   const serverToFind = await prisma.server.findUnique({
     where: { uuid },
-    select: { user: { select: { discord_id: true } } },
+    select: { 
+      status: true,
+      name: true,
+      description: true,
+      link: true,
+      user: { select: { discord_id: true } } 
+    },
   });
 
   if (!serverToFind) {
-    return NextResponse.json({ error: "Serveur introuvable" }, { status: 404 }); // Not found
+    return NextResponse.json({ error: "Not Found" }, { status: 404 }); // Not found
   }
 
   if (serverToFind.user.discord_id !== currentUser.sub) {
     return NextResponse.json(
-      { error: "Interdit" },
+      { error: "Forbidden" },
       { status: 403 }, // Forbidden
     );
   }
@@ -100,34 +114,41 @@ export async function PATCH(
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "JSON invalide" }, { status: 400 }); // Bad Request
+    return NextResponse.json({ error: "Bad Request" }, { status: 400 }); // Bad Request
   }
 
   const { data, error } = await serverDataValidation.safeParseAsync(body);
 
   if (error) {
     return NextResponse.json(
-      { error: "Données invalides", details: error.issues },
+      { error: "Bad request", details: error.issues },
       { status: 400 },
     );
   }
 
   if (Object.keys(data).length === 0) {
     return NextResponse.json(
-      { error: "Aucune donnée à modifier" },
+      { error: "Bad request" },
       { status: 400 },
     );
   }
 
+  const contentChanged = 
+    (data.name !== undefined && data.name !== serverToFind.name) ||
+    (data.description !== undefined && data.description !== serverToFind.description) ||
+    (data.link !== undefined && data.link !== serverToFind.link);
+
+  const backToPending = contentChanged && serverToFind.status !== "pending";
+
   try {
     const updatedServer = await prisma.server.update({
       where: { uuid },
-      data,
+      data: backToPending ? { ...data, status: "pending" } : data,
     });
 
     return Response.json(updatedServer, { status: 200 }); // OK
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 }); // Server Error
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 }); // Server Error
   }
 }

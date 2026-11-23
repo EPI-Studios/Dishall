@@ -18,6 +18,7 @@ export default function ServersSection() {
   const [serverUpdate, setServerUpdate] = useState<ServerType | null>(null);
   const [serverToDelete, setServerToDelete] = useState<ServerType | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchServers() {
@@ -71,6 +72,14 @@ export default function ServersSection() {
           server.uuid === updated.uuid ? { ...server, ...updated } : server,
         ),
       );
+
+      // Le serveur repasse en pending après modification
+      if (updated.status === "pending" && serverUpdate.status !== "pending") {
+        setNotice("En attente de validation par la modération");
+      } else {
+        setNotice(null);
+      }
+
       setServerUpdate(null);
     } catch (error) {
       setFormError(
@@ -81,6 +90,14 @@ export default function ServersSection() {
 
   return (
     <>
+      {notice && (
+        <p
+          role="status"
+          className="mb-4 rounded-xl border-2 border-pink bg-pink/10 p-3 text-center"
+        >
+          {notice}
+        </p>
+      )}
       {servers.map((server: ServerType) => (
         <article
           key={server.uuid}
@@ -112,6 +129,7 @@ export default function ServersSection() {
               aria-label="Modifier le serveur"
               className="flex size-10 items-center justify-center rounded-full bg-pink lg:absolute lg:-right-5 lg:top-6"
               onClick={() => {
+                setNotice(null);
                 setFormError(null);
                 setServerUpdate(server);
               }}
@@ -182,6 +200,9 @@ export default function ServersSection() {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-6"
         >
           <div className="flex flex-col rounded-xl border-2 border-pink bg-dark p-6 text-center shadow-[0_0_10px_var(--color-pink)]">
+            <p className="text-sm opacity-70 mb-4">
+              Modifier le nom, la description ou le lien remet le serveur en attente de validation.
+            </p>
             <div className="flex flex-col items-center justify-center mb-8">
               <label className="text-xl mb-2">Nom du serveur</label>
               <input

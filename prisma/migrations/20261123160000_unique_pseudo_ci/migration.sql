@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "user_pseudo_lower_key" ON "user" (lower(pseudo));

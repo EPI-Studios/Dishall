@@ -1,20 +1,31 @@
 import type { ReviewType } from "../../@types/type";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth/auth.server";
+import { z } from "zod";
 
 const PAGE_SIZE = 10;
 
 export async function getReviewsByServerUuid( serverUuid: string ): Promise<ReviewType[]> {
-  const httpResponse = await fetch(
-    `${process.env.API_URL}/reviews?serverUuid=${serverUuid}`,
-  );
-  
-  if (!httpResponse.ok) {
-    throw new Error(`Impossible de charger les avis (${httpResponse.status})`)
-  }
+  if (!z.uuid().safeParse(serverUuid).success) return [];
 
-  return httpResponse.json();
-};
+  const reviews = await prisma.critic.findMany({
+    where: { status: "approved", server: { uuid: serverUuid } },
+    orderBy: { created_at: "desc" },
+    take: 100,
+    select: {
+      uuid: true,
+      rate: true,
+      comment: true,
+      created_at: true,
+      user: { select: { pseudo: true, avatar: true } },
+    },
+  });
+
+  return reviews.map((review) => ({
+    ...review,
+    created_at: review.created_at.toISOString(), // ton ReviewType attend une chaîne
+  }));
+}
 
 export async function getAllReviewsModeration(page = 1) {
   const current = await getCurrentUser();

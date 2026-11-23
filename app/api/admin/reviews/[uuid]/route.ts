@@ -19,7 +19,7 @@ export async function PATCH(
 ) {
   const currentUser = await getCurrentUser();
   if (!currentUser) {
-    return NextResponse.json({ error: "Non authentifié" }, { status: 401 }); // Unauthorized
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 }); // Unauthorized
   }
 
   const user = await prisma.user.findUnique({
@@ -28,22 +28,26 @@ export async function PATCH(
   });
 
   if (user?.role !== "admin" && user?.role !== "moderator") {
-    return NextResponse.json({ error: "Interdit" }, { status: 403 }); // Forbidden
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 }); // Forbidden
   }
 
   const { uuid } = await params;
+
+  if (!z.uuid().safeParse(uuid).success) {
+    return NextResponse.json({ error: "Serveur introuvable" }, { status: 404 });
+  }
 
   let body: unknown;
 
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "JSON invalide" }, { status: 400 }); // Bad Request
+    return NextResponse.json({ error: "Bad request" }, { status: 400 }); // Bad Request
   }
 
   const parsed = statusSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Données invalides" }, { status: 400 }); // Bad Request
+    return NextResponse.json({ error: "Bad request" }, { status: 400 }); // Bad Request
   }
 
   const { status, reason } = parsed.data;
@@ -55,7 +59,7 @@ export async function PATCH(
 
   if (!review) {
     return NextResponse.json(
-      { error: "Commentaire introuvable" },
+      { error: "Not found" },
       { status: 404 },
     );
   }
@@ -75,7 +79,7 @@ export async function PATCH(
     return NextResponse.json(updatedReview, { status: 200 });
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
@@ -85,7 +89,7 @@ export async function DELETE(
 ) {
   const currentUser = await getCurrentUser();
   if (!currentUser) {
-    return NextResponse.json({ error: "Non authentifié" }, { status: 401 }); // Unauthorized
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 }); // Unauthorized
   }
 
   const user = await prisma.user.findUnique({
@@ -94,10 +98,14 @@ export async function DELETE(
   });
 
   if (user?.role !== "admin") {
-    return NextResponse.json({ error: "Interdit" }, { status: 403 }); // Forbidden
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 }); // Forbidden
   }
 
   const { uuid } = await params;
+
+  if (!z.uuid().safeParse(uuid).success) {
+    return NextResponse.json({ error: "Serveur introuvable" }, { status: 404 });
+  }
 
   try {
     await prisma.critic.delete({ where: { uuid } });
@@ -106,13 +114,13 @@ export async function DELETE(
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === "P2025") {
         return NextResponse.json(
-          { error: "Commentaire introuvable" },
+          { error: "Not found" },
           { status: 404 },
         );
       }
     }
 
     console.error(error);
-    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 }); // Server error
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 }); // Server error
   }
 }

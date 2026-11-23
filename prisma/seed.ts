@@ -7,7 +7,6 @@ const uuid = (prefix: string, n: number) =>
 
 const U = (n: number) => uuid("a1", n); // user
 const S = (n: number) => uuid("b2", n); // server
-const SC = (n: number) => uuid("c3", n); // score
 const C = (n: number) => uuid("d4", n); // critic
 const M = (n: number) => uuid("e5", n); // mod_action
 const T = (n: number) => uuid("f6", n); // tag
@@ -19,7 +18,7 @@ const daysAgo = (d: number) => hoursAgo(d * 24);
 // (deleteMany ne remet pas les auto-increment à 1, donc on TRUNCATE)
 await prisma.$executeRawUnsafe(`
   TRUNCATE TABLE "server_tag", "report", "tag", "mod_action", "critic",
-                 "score", "server_stats", "server", "user"
+                 "server_stats", "server", "user"
   RESTART IDENTITY CASCADE
 `);
 
@@ -58,39 +57,23 @@ await prisma.server.createMany({
 // ---------- Server stats (10) ----------
 await prisma.server_Stats.createMany({
   data: [
-    { server_bump: true, last_bump_at: hoursAgo(2), users_nb: 1520, created_at: daysAgo(300), server_id: 1 },
-    { server_bump: true, last_bump_at: daysAgo(1), users_nb: 860, created_at: daysAgo(210), server_id: 2 },
-    { server_bump: true, last_bump_at: hoursAgo(5), users_nb: 3400, created_at: daysAgo(500), server_id: 3 },
-    { server_bump: false, last_bump_at: daysAgo(6), users_nb: 410, created_at: daysAgo(120), server_id: 4 },
-    { server_bump: true, last_bump_at: daysAgo(3), users_nb: 975, created_at: daysAgo(260), server_id: 5 },
-    { server_bump: false, last_bump_at: daysAgo(12), users_nb: 230, created_at: daysAgo(90), server_id: 6 },
-    { server_bump: true, last_bump_at: hoursAgo(8), users_nb: 2100, created_at: daysAgo(400), server_id: 7 },
-    { server_bump: false, last_bump_at: daysAgo(15), users_nb: 75, created_at: daysAgo(15), server_id: 8 },
-    { server_bump: true, last_bump_at: daysAgo(2), users_nb: 640, created_at: daysAgo(180), server_id: 9 },
-    { server_bump: false, last_bump_at: daysAgo(30), users_nb: 40, created_at: daysAgo(30), server_id: 10 },
-  ],
-});
-
-// ---------- Scores (10) : total = somme des 4 critères ----------
-await prisma.score.createMany({
-  data: [
-    { uuid: SC(1), total_score: 85, completitude: 22, activity: 20, conformity: 25, critic: 18, server_id: 1 },
-    { uuid: SC(2), total_score: 65, completitude: 18, activity: 15, conformity: 20, critic: 12, server_id: 2 },
-    { uuid: SC(3), total_score: 94, completitude: 25, activity: 23, conformity: 24, critic: 22, server_id: 3 },
-    { uuid: SC(4), total_score: 51, completitude: 15, activity: 10, conformity: 18, critic: 8, server_id: 4 },
-    { uuid: SC(5), total_score: 77, completitude: 20, activity: 18, conformity: 22, critic: 17, server_id: 5 },
-    { uuid: SC(6), total_score: 45, completitude: 12, activity: 8, conformity: 15, critic: 10, server_id: 6 },
-    { uuid: SC(7), total_score: 90, completitude: 24, activity: 21, conformity: 25, critic: 20, server_id: 7 },
-    { uuid: SC(8), total_score: 63, completitude: 17, activity: 14, conformity: 19, critic: 13, server_id: 8 },
-    { uuid: SC(9), total_score: 79, completitude: 21, activity: 19, conformity: 23, critic: 16, server_id: 9 },
-    { uuid: SC(10), total_score: 37, completitude: 10, activity: 6, conformity: 14, critic: 7, server_id: 10 },
+    { last_bump_at: hoursAgo(2), users_nb: 1520, created_at: daysAgo(300), server_id: 1 },
+    { last_bump_at: daysAgo(1), users_nb: 860, created_at: daysAgo(210), server_id: 2 },
+    { last_bump_at: hoursAgo(5), users_nb: 3400, created_at: daysAgo(500), server_id: 3 },
+    { last_bump_at: daysAgo(6), users_nb: 410, created_at: daysAgo(120), server_id: 4 },
+    { last_bump_at: daysAgo(3), users_nb: 975, created_at: daysAgo(260), server_id: 5 },
+    { last_bump_at: daysAgo(12), users_nb: 230, created_at: daysAgo(90), server_id: 6 },
+    { last_bump_at: hoursAgo(8), users_nb: 2100, created_at: daysAgo(400), server_id: 7 },
+    { last_bump_at: daysAgo(15), users_nb: 75, created_at: daysAgo(15), server_id: 8 },
+    { last_bump_at: daysAgo(2), users_nb: 640, created_at: daysAgo(180), server_id: 9 },
+    { last_bump_at: daysAgo(30), users_nb: 40, created_at: daysAgo(30), server_id: 10 },
   ],
 });
 
 // ---------- Critics (13) : un auteur ne note jamais son propre serveur ----------
 await prisma.critic.createMany({
   data: [
-    { uuid: C(1), comment: "Super ambiance, les tournois sont très bien organisés !", rate: 5, status: "approved", created_at: daysAgo(40), updated_at: daysAgo(40), server_id: 1, user_id: 2 },
+    { uuid: C(1), comment: "Super ambiance, les tournois sont très bien organisés !", rate: 5, status: "approved", created_at: daysAgo(40), updated_at: daysAgo(40), server_id: 1, user_id: 4 },
     { uuid: C(2), comment: "Serveur actif et accueillant, je recommande.", rate: 4, status: "approved", created_at: daysAgo(35), updated_at: daysAgo(35), server_id: 1, user_id: 3 },
     { uuid: C(3), comment: "Bon contenu, mais les salons spoilers sont parfois mal respectés.", rate: 4, status: "approved", created_at: daysAgo(30), updated_at: daysAgo(28), server_id: 2, user_id: 1 },
     { uuid: C(4), comment: "La meilleure communauté dev francophone, réponses rapides.", rate: 5, status: "approved", created_at: daysAgo(45), updated_at: daysAgo(45), server_id: 3, user_id: 4 },
@@ -115,8 +98,8 @@ await prisma.mod_Action.createMany({
     { uuid: M(4), action: "status_change", reason: "pending → approved : Fiche conforme aux règles.", target: S(4), type: "server", created_at: daysAgo(110), user_id: 2 },
     { uuid: M(5), action: "status_change", reason: "pending → approved : Fiche conforme aux règles.", target: S(5), type: "server", created_at: daysAgo(250), user_id: 3 },
     { uuid: M(6), action: "status_change", reason: "pending → rejected : Contenu non conforme aux règles de la plateforme.", target: S(10), type: "server", created_at: daysAgo(25), user_id: 1 },
-    { uuid: M(7), action: "status_change", reason: "approved → rejected : Plus de 3 signalements, propos jugés injurieux.", target: C(8), type: "review", created_at: daysAgo(10), user_id: 2 },
-    { uuid: M(8), action: "role_change", reason: "member → member : exemple", target: U(8), type: "user", created_at: daysAgo(10), user_id: 2 },
+    { uuid: M(7), action: "status_change", reason: "approved → hidden : Plus de 3 signalements, propos jugés injurieux.", target: C(8), type: "review", created_at: daysAgo(10), user_id: 2 },
+    { uuid: M(8), action: "role_change", reason: "member → moderator : Candidature acceptée, membre actif de la communauté.", target: "810000000000000003", type: "user", created_at: daysAgo(60), user_id: 1 },
     { uuid: M(9), action: "status_change", reason: "pending → approved : Avis conforme et constructif.", target: C(1), type: "review", created_at: daysAgo(39), user_id: 3 },
     { uuid: M(10), action: "status_change", reason: "pending → approved : Fiche conforme aux règles.", target: S(7), type: "server", created_at: daysAgo(390), user_id: 3 },
   ],
@@ -166,6 +149,15 @@ await prisma.report.createMany({
     { user_uuid: U(5), critic_uuid: C(13), reason: "Avis trop sévère", created_at: daysAgo(6) },
   ],
 });
+
+await prisma.$executeRaw`
+  UPDATE server SET score = sub.s
+  FROM (
+    SELECT server_id, ROUND(AVG(rate) * 2, 1) AS s
+    FROM critic WHERE status = 'approved' GROUP BY server_id
+  ) sub
+  WHERE server.id = sub.server_id
+`;
 
 console.log("📊 Échantillonnage effectué avec succès.");
 await prisma.$disconnect();

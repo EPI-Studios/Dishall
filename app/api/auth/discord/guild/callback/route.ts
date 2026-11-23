@@ -54,14 +54,14 @@ export async function GET(request: NextRequest) {
     !JWT_SECRET ||
     !CLIENT_REDIRECT_URL
   ) {
-    return fail("Erreur serveur", 500); // Internal server error
+    return fail("Internal server error", 500); // Internal server error
   }
 
   // On récupère l'utilisateur connecté grâce à son cookie de session
   const sessionToken = request.cookies.get("token")?.value;
 
   if (!sessionToken) {
-    return fail("Non authentifié", 401); // Unauthorized
+    return fail("Unauthorized", 401); // Unauthorized
   }
 
   let discordId: string;
@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
     if (!payload.sub) throw new Error("sub manquant");
     discordId = payload.sub;
   } catch {
-    return fail("Session invalide ou expirée", 401); // Unauthorized
+    return fail("Unauthorized", 401); // Unauthorized
   }
 
   // On envoie le code pour recevoir un access token
@@ -96,17 +96,17 @@ export async function GET(request: NextRequest) {
     });
 
     if (!tokenResponse.ok) {
-      return fail("Code refusé par Discord", 400); // Bad Request
+      return fail("Bad request", 400); // Bad Request
     }
 
     const tokenData = discordTokenSchema.safeParse(await tokenResponse.json());
     if (!tokenData.success) {
-      return fail("Réponse Discord inattendue", 502); // Bad Gateway
+      return fail("Bad gateway", 502); // Bad Gateway
     }
 
     accessToken = tokenData.data.access_token;
   } catch {
-    return fail("Discord est injoignable", 502); // Bad Gateway
+    return fail("Bad gateway", 502); // Bad Gateway
   }
 
   // Profil (pour vérifier l'identité) et serveurs de l'utilisateur, en parallèle
@@ -122,7 +122,7 @@ export async function GET(request: NextRequest) {
     ]);
 
     if (!meResponse.ok || !guildsResponse.ok) {
-      return fail("Impossible de récupérer les données Discord", 502); // Bad Gateway
+      return fail("Bad gateway", 502); // Bad Gateway
     }
 
     const parsedMe = discordMeSchema.safeParse(await meResponse.json());
@@ -131,20 +131,20 @@ export async function GET(request: NextRequest) {
       .safeParse(await guildsResponse.json());
 
     if (!parsedMe.success || !parsedGuilds.success) {
-      return fail("Réponse Discord inattendue", 502); // Bad Gateway
+      return fail("Bad gateway", 502); // Bad Gateway
     }
 
     me = parsedMe.data;
     guilds = parsedGuilds.data;
   } catch {
-    return fail("Discord est injoignable", 502); // Bad Gateway
+    return fail("Bad gateway", 502); // Bad Gateway
   }
 
   // Discord permet de changer de compte sur l'écran d'autorisation :
   // on refuse si ce n'est pas le compte connecté à Dishall.
   if (me.id !== discordId) {
     return fail(
-      "Le compte Discord autorisé ne correspond pas à ton compte connecté",
+      "Forbidden",
       403, // Forbidden
     );
   }
@@ -189,7 +189,7 @@ export async function GET(request: NextRequest) {
     );
   } catch (error) {
     console.error(error);
-    return fail("Erreur serveur", 500); // Internal server error
+    return fail("Internal server error", 500); // Internal server error
   }
 
   const response = NextResponse.redirect(new URL("/dashboard", CLIENT_REDIRECT_URL));

@@ -19,7 +19,7 @@ export async function DELETE(
 ) {
   const currentUser = await getCurrentUser();
   if (!currentUser) {
-    return NextResponse.json({ error: "Non authentifié" }, { status: 401 }); // Unauthorized
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 }); // Unauthorized
   }
 
   const admin = await prisma.user.findUnique({
@@ -27,14 +27,14 @@ export async function DELETE(
     select: { role: true },
   });
   if (admin?.role !== "admin") {
-    return NextResponse.json({ error: "Interdit" }, { status: 403 }); // Forbidden
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 }); // Forbidden
   }
 
   const { discord_id } = await params;
 
   if (discord_id === currentUser.sub) {
     return NextResponse.json(
-      { error: "Tu ne peux pas supprimer ton propre compte" },
+      { error: "Bad request" },
       { status: 400 },
     );
   }
@@ -46,14 +46,14 @@ export async function DELETE(
 
   if (!target) {
     return NextResponse.json(
-      { error: "Utilisateur introuvable" },
+      { error: "Not found" },
       { status: 404 },
     ); // Not Found
   }
 
   if (target.role === "admin") {
     return NextResponse.json(
-      { error: "Impossible de supprimer un administrateur" },
+      { error: "Forbidden" },
       { status: 403 }, // Forbidden
     );
   }
@@ -65,14 +65,14 @@ export async function DELETE(
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === "P2025") {
         return NextResponse.json(
-          { error: "Utilisateur introuvable" },
+          { error: "Not found" },
           { status: 404 },
         );
       }
     }
 
     console.error(error);
-    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 }); // Server error
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 }); // Server error
   }
 }
 
@@ -82,7 +82,7 @@ export async function PATCH(
 ) {
   const currentUser = await getCurrentUser();
   if (!currentUser) {
-    return NextResponse.json({ error: "Non authentifié" }, { status: 401 }); // Unauthorized
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 }); // Unauthorized
   }
 
   const admin = await prisma.user.findUnique({
@@ -91,14 +91,14 @@ export async function PATCH(
   });
 
   if (admin?.role !== "admin") {
-    return NextResponse.json({ error: "Interdit" }, { status: 403 }); // Forbidden
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 }); // Forbidden
   }
 
   const { discord_id } = await params;
 
   if (discord_id === currentUser.sub) {
     return NextResponse.json(
-      { error: "Tu ne peux pas modifier ton propre rôle" },
+      { error: "Forbidden" },
       { status: 403 },
     );
   }
@@ -107,12 +107,12 @@ export async function PATCH(
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "JSON invalide" }, { status: 400 }); // Bad Request
+    return NextResponse.json({ error: "Bad request" }, { status: 400 }); // Bad Request
   }
 
   const parsed = roleSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Données invalides" }, { status: 400 }); // Bad Request
+    return NextResponse.json({ error: "Bad request" }, { status: 400 }); // Bad Request
   }
 
   const { role, reason } = parsed.data;
@@ -124,14 +124,14 @@ export async function PATCH(
 
   if (!target) {
     return NextResponse.json(
-      { error: "Utilisateur introuvable" },
+      { error: "Not found" },
       { status: 404 },
     ); // Not Found
   }
 
   if (target.role === "admin") {
     return NextResponse.json(
-      { error: "Impossible de modifier le rôle d'un administrateur" },
+      { error: "Forbidden" },
       { status: 403 }, // Forbidden
     );
   }
@@ -151,6 +151,6 @@ export async function PATCH(
     return NextResponse.json(updatedUser, { status: 200 });
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

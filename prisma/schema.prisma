@@ -24,12 +24,12 @@ model Server {
   icon        String?
   banner      String?
   status      String @db.VarChar(20)
+  score       Float?
   user        User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
   user_id     Int
   created_at  DateTime @default(now())
 
   serverStats Server_Stats?
-  score       Score?
   critics     Critic[]
   tags        ServerHasTag[]
 
@@ -66,7 +66,6 @@ enum Role {
 
 model Server_Stats {
   id           Int      @id @default(autoincrement())
-  server_bump  Boolean  @default(false)
   last_bump_at DateTime?
   users_nb     Int
   created_at   DateTime @default(now())
@@ -75,21 +74,6 @@ model Server_Stats {
   server_id Int    @unique
 
   @@map("server_stats")
-}
-
-model Score {
-  id           Int    @id @default(autoincrement())
-  uuid         String @unique @default(uuid()) @db.Uuid
-  total_score  Int
-  completitude Int
-  activity     Int
-  conformity   Int
-  critic       Int
-
-  server    Server @relation(fields: [server_id], references: [id], onDelete: Cascade)
-  server_id Int    @unique
-
-  @@map("score")
 }
 
 model Critic {

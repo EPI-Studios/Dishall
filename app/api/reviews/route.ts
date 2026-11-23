@@ -10,37 +10,10 @@ const reviewSchema = z.object({
   comment: z.string().trim().min(10).max(1000),
 });
 
-export async function GET(request: Request) {
-  const serverUuid = new URL(request.url).searchParams.get("serverUuid");
-
-  if (!serverUuid) {
-    return NextResponse.json({ error: "serverUuid invalide" }, { status: 400 });
-  }
-
-  const reviews = await prisma.critic.findMany({
-    where: { status: "approved", server: { uuid: serverUuid } },
-    orderBy: { created_at: "desc" },
-    select: {
-      uuid: true,
-      created_at: true,
-      rate: true,
-      comment: true,
-      user: {
-        select: {
-          pseudo: true,
-          avatar: true,
-        },
-      },
-    },
-  });
-
-  return NextResponse.json(reviews);
-}
-
 export async function POST(request: NextRequest) {
   const currentUser = await getCurrentUser();
   if (!currentUser) {
-    return NextResponse.json({ error: "Non authentifié" }, { status: 401 }); // Unauthorized
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 }); // Unauthorized
   }
 
   let body: unknown;
@@ -48,13 +21,13 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "JSON invalide" }, { status: 400 }); // Bad Request
+    return NextResponse.json({ error: "Bad request" }, { status: 400 }); // Bad Request
   }
 
   const parsed = reviewSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: "Données invalides", details: parsed.error.issues },
+      { error: "Bad request", details: parsed.error.issues },
       { status: 400 }, // Bad Request
     );
   }
@@ -67,7 +40,7 @@ export async function POST(request: NextRequest) {
   });
 
   if (!user) {
-    return NextResponse.json({ error: "Non authentifié" }, { status: 401 }); // Unauthorized
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 }); // Unauthorized
   }
 
   const server = await prisma.server.findUnique({
@@ -77,13 +50,13 @@ export async function POST(request: NextRequest) {
 
   // Si un serveur est pending ou rejected
   if (!server || server.status !== "approved") {
-    return NextResponse.json({ error: "Serveur introuvable" }, { status: 404 }); // Not Found
+    return NextResponse.json({ error: "Not found" }, { status: 404 }); // Not Found
   }
 
   // Règle métier : on ne note pas son propre serveur
   if (server.user_id === user.id) {
     return NextResponse.json(
-      { error: "Tu ne peux pas donner d'avis sur ton propre serveur" },
+      { error: "Forbidden" },
       { status: 403 }, // Forbidden
     );
   }
@@ -115,11 +88,11 @@ export async function POST(request: NextRequest) {
       error.code === "P2002"
     ) {
       return NextResponse.json(
-        { error: "Tu as déjà donné ton avis sur ce serveur" },
+        { error: "Conflict" },
         { status: 409 }, // Conflict
       );
     }
     console.error(error);
-    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 }); // Server error
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 }); // Server error
   }
 }

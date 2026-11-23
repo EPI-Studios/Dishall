@@ -22,9 +22,6 @@ type ModerationServer = {
     last_bump_at: Date | null;
     users_nb: number;
   } | null;
-  score: {
-    total_score: number;
-  } | null;
 };
 
 export default function ServerCase({ server, isAdmin }: { server: ModerationServer, isAdmin: boolean }) {
@@ -155,9 +152,7 @@ export default function ServerCase({ server, isAdmin }: { server: ModerationServ
 
           <div className="mt-4 text-center">
             <p className="text-lg font-bold">
-              {server.score?.total_score
-                ? `Score Total : ${server.score?.total_score}`
-                : "Pas de note pour le moment"}
+              Pas de note
             </p>
           </div>
         </Link>

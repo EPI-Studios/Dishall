@@ -3,7 +3,7 @@ export type ServerType = {
   name: string;
   guild_id: string;
   tags: string[];
-  serverStats: serverStatsType;
+  serverStats?: serverStatsType;
   rating: number;
   reviewCount: number;
   members: number;
@@ -14,12 +14,12 @@ export type ServerType = {
   country: string;
   link: string;
   bumped: boolean;
-  owner: boolean;
+  owner?: boolean;
   created_at: Date;
+  status?: string
 };
 
 export type UserType = {
-  id: number;
   discord_id: string;
   avatar: string;
   pseudo: string;
@@ -27,7 +27,6 @@ export type UserType = {
 }
 
 export type CategoryType = {
-  id: number;
   name: string;
   slug: string;
   icon: string;
@@ -37,14 +36,11 @@ export type CategoryType = {
 };
 
 export type ReviewType = {
-  id: number;
-  uuid: string
-  serverUuid: string;
+  uuid: string;
   rate: number;
-  status: string;
   comment: string;
   created_at: string;
-  user: UserType | null;
+  user: { pseudo: string; avatar: string } | null;
 };
 
 export type ServerTagType = {
@@ -54,7 +50,6 @@ export type ServerTagType = {
 }
 
 export type serverStatsType = {
-  id: number;
   users_nb: number;
   server_bump: string;
   last_bump_at: string;

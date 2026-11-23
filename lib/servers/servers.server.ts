@@ -3,32 +3,82 @@ import "server-only";
 import type { ServerType } from "../../@types/type";
 import { getCurrentUser } from "../auth/auth.server";
 import { prisma } from "../prisma";
+import { z } from "zod";
+import { Prisma } from "@/generated/prisma/client";
+
+const publicServerSelect = {
+  uuid: true,
+  guild_id: true,
+  name: true,
+  description: true,
+  link: true,
+  category: true,
+  country: true,
+  icon: true,
+  banner: true,
+  created_at: true,
+  tags: { select: { tag: { select: { name: true } } } },
+  serverStats: { select: { users_nb: true, server_bump: true } },
+  critics: { where: { status: "approved" }, select: { rate: true } },
+} satisfies Prisma.ServerSelect;
+
+type PublicServer = Prisma.ServerGetPayload<{ select: typeof publicServerSelect }>;
+
+function toServerType(server: PublicServer): ServerType {
+  const rates = server.critics.map((critic) => critic.rate);
+
+  return {
+    uuid: server.uuid,
+    guild_id: server.guild_id,
+    name: server.name,
+    description: server.description ?? "",
+    link: server.link ?? "",
+    category: server.category ?? "",
+    country: server.country ?? "",
+    icon: server.icon ?? "",
+    banner: server.banner ?? "",
+    created_at: server.created_at,
+    members: server.serverStats?.users_nb ?? 0,
+    bumped: server.serverStats?.server_bump ?? false,
+    tags: server.tags.map((serverTag) => serverTag.tag.name),
+    rating: rates.length ? rates.reduce((sum, rate) => sum + rate, 0) / rates.length : 0,
+    reviewCount: rates.length,
+  };
+}
 
 export async function getServers(): Promise<ServerType[]> {
   
-  const httpResponse = await fetch(`${process.env.API_URL}/servers`);
-  
-  if (!httpResponse.ok) {
-    throw new Error("Impossible de charger les serveurs")
-  }
-  
-  const servers = await httpResponse.json();
+  const servers = await prisma.server.findMany({
+    where: { status: "approved" },
+    select: publicServerSelect,
+  });
 
-  return servers;
+  return servers.map(toServerType);
 };
 
-export async function getLatestServers(limit = 4) {
-  const servers = await getServers();
-  return servers 
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-    .slice(0, limit);
+export async function getLatestServers(limit = 4): Promise<ServerType[]> {
+  // Tri et limite en base 
+  const servers = await prisma.server.findMany({
+    where: { status: "approved" },
+    orderBy: { created_at: "desc" },
+    take: limit,
+    select: publicServerSelect,
+  });
+
+  return servers.map(toServerType);
 }
 
 export async function getServerByUuid(uuid: string): Promise<ServerType | undefined> {
-  const servers = await getServers()
-  
-  return servers.find((s: ServerType) => s.uuid === uuid);
-};
+  // La colonne est de type @db.Uuid : un identifiant mal formé ferait planter Prisma (500)
+  if (!z.uuid().safeParse(uuid).success) return undefined;
+
+  const server = await prisma.server.findFirst({
+    where: { uuid, status: "approved" },
+    select: publicServerSelect,
+  });
+
+  return server ? toServerType(server) : undefined;
+}
 
 const PAGE_SIZE = 10;
 
@@ -55,7 +105,6 @@ export async function getAllServersForAdmin(page = 1) {
         guild_id: true,
         icon: true,
         serverStats: { select: { users_nb: true, server_bump: true, last_bump_at: true } },
-        score: { select: { total_score: true } },
       },
     }),
     prisma.server.count(),

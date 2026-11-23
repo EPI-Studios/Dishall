@@ -5,7 +5,7 @@ import { getCurrentUser } from "@/lib/auth/auth.server";
 export async function GET() {
   const currentUser = await getCurrentUser();
   if (!currentUser) {
-    return NextResponse.json({ error: "Non authentifié" }, { status: 401 }); // Unauthorized
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 }); // Unauthorized
   }
 
   try {
@@ -15,12 +15,12 @@ export async function GET() {
     });
 
     if (!user) {
-      return NextResponse.json({ error: "Utilisateur introuvable" }, { status: 404 }); // Not found
+      return NextResponse.json({ error: "Not found" }, { status: 404 }); // Not found
     }
 
     return NextResponse.json(user.servers);
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 }); // Server error
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 }); // Server error
   }
 }
