@@ -1,4 +1,4 @@
-import { CategoryType } from "../../@types/type";
+import { CategoryType } from "@/@types/type";
 import CategoryCard from "./CategoryCard";
 
 export default function CategoryList({ sorted }: { sorted: CategoryType[] }) {

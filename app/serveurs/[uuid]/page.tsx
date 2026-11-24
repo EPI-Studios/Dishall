@@ -1,8 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import discordServerIcon from "@/util/discordImage";
-import ReviewSummary from "@/app/components/ReviewSummary";
-import LatestReviews from "@/app/components/LatestReviews";
+import ReviewSummary from "@/app/components/reviews/ReviewSummary";
+import LatestReviews from "@/app/components/reviews/LatestReviews";
 import Header from "@/app/components/Header";
 import Footer from "@/app/components/Footer";
 import { notFound } from "next/navigation";

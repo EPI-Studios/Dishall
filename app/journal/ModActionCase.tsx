@@ -1,4 +1,3 @@
-// À placer dans : app/moderation/ModActionCase.tsx
 import Link from "next/link";
 import type { TargetInfo } from "@/lib/mod_actions/mod_action.server";
 

@@ -1,7 +1,7 @@
 import Footer from "../components/Footer";
 import Hero from "../components/Hero";
-import CategoryFilter from "../components/CategoryFilter";
-import ServerCard from "../components/ServerCard";
+import CategoryFilter from "./components/CategoryFilter";
+import ServerCard from "../serveurs/components/ServerCard";
 import { categories } from "../../data/categories";
 import { Metadata } from "next";
 import { getServers } from "@/lib/servers/servers.server";

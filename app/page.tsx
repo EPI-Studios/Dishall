@@ -1,4 +1,4 @@
-import ServerCard from "./components/ServerCard";
+import ServerCard from "./serveurs/components/ServerCard";
 import Footer from "./components/Footer";
 import Hero from "./components/Hero";
 import { Icon } from "@iconify/react";

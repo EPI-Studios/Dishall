@@ -28,7 +28,7 @@ export default function ServerSearchBar({
           e.preventDefault();
           // Entrée : ouvre le premier résultat
           if (results[0]) {
-            router.push(`/serveurs/${results[0].id}`);
+            router.push(`/serveurs/${results[0].uuid}`);
             setQuery("");
           }
         }}

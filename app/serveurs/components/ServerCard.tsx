@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import Image from "next/image";
 import Link from "next/link";
-import StarRating from "./StarRating";
+import StarRating from "../../components/reviews/StarRating";
 import { Icon } from "@iconify/react";
 import type { ServerType } from "@/@types/type";
 import discordServerIcon from "@/util/discordImage";

@@ -11,8 +11,8 @@ export default function ServerFilter({ servers }: { servers: ServerType[] }) {
   const menuRef = useRef<HTMLDivElement>(null);
 
   const SORT_OPTIONS = [
-    { value: "score", label: "Meilleur score" },
     { value: "popularity", label: "Popularité" },
+    { value: "members", label: "Membres" },
     { value: "name", label: "Nom (A-Z)" },
     { value: "rating", label: "Avis" },
   ];

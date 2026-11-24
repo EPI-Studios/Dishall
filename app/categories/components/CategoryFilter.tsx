@@ -2,7 +2,7 @@
 
 import CategoryList from "./CategoryList";
 import { useState } from "react";
-import { CategoryType } from "../../@types/type";
+import { CategoryType } from "@/@types/type";
 import { Icon } from "@iconify/react";
 
 export default function CategoryFilter({

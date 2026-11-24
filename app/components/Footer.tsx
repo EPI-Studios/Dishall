@@ -1,12 +1,13 @@
 import { Icon } from "@iconify/react";
+import Link from "next/link";
 
 export default function Footer() {
   return (
     <footer className="mb-4 grid grid-cols-3 items-center px-6 lg:px-10">
       <p className="text-xs">© 2026 - DisHall</p>
-      <a href="#" className="justify-self-center text-xs hover:font-bold">
+      <Link href="/mentions-legales" className="justify-self-center text-xs hover:font-bold">
         Mentions Légales
-      </a>
+      </Link>
       <a
         href="https://discord.gg/"
         aria-label="Logo Discord"

@@ -105,7 +105,8 @@ L'application est disponible sur [http://localhost:3000](http://localhost:3000).
 app/            Pages (App Router) et routes API (app/api)
   admin/        Administration
   dashboard/    Tableau de bord utilisateur
-  moderation/   Journal de modération
+  journal/      Journal des actions modérateur/administrateur
+  moderation/   Administration
   serveurs/     Annuaire et pages de détail
 lib/            Accès aux données et utilitaires
   *.server.ts   Code exécuté côté serveur uniquement (accès Prisma)
